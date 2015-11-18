@@ -9,7 +9,7 @@ public class Graph {
 	private ArrayList<Edge> edges;
 	private HashMap<Integer, Vertex> vertices;
 	private double adjacencyMatrix[][];
-	private ArrayList<Integer>[] adjacencyList;
+	//private ArrayList<Integer>[] adjacencyList;
 	private boolean finalized;
 	private int link;
 	private int vertex;
@@ -19,7 +19,7 @@ public class Graph {
 		edges = new ArrayList<Edge>();
 		vertices = new HashMap<Integer, Vertex>();
 		adjacencyMatrix = null;
-		adjacencyList = null;
+	//	adjacencyList = null;
 		finalized = false;
 		link = 0;
 		demand = 0;

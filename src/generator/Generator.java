@@ -135,9 +135,15 @@ public class Generator {
 			}
 		}
 		String data = "";
-		data += "node=" + vertex + ";\n" + "link=" + link + ";\n";
-		data += "d="+demandCounter+";\n";
-		data += "edge=" + edge.toString() + ";\n";
+//		data += "node=" + vertex + ";\n" + "link=" + link + ";\n";
+//		data += "d="+demandCounter+";\n";
+//		data += "edge=" + edge.toString() + ";\n";
+//		data += "avertex=" + avertex.toString() + ";\n";
+//		data += "bvertex=" + bvertex.toString() + ";\n";
+//		data += "demand=" +demand.toString()+";\n";
+		data += "n_vertex=" + vertex + ";\n" + "n_edge=" + link + ";\n";
+		data += "n_demand="+demandCounter+";\n";
+		data += "max_capacity=" + edge.toString() + ";\n";
 		data += "avertex=" + avertex.toString() + ";\n";
 		data += "bvertex=" + bvertex.toString() + ";\n";
 		data += "demand=" +demand.toString()+";\n";
@@ -173,6 +179,7 @@ public class Generator {
 		String line = br.readLine();
 		StringTokenizer str = new StringTokenizer(line);
 		int vertex = str.countTokens();
+		System.out.println(vertex);
 		int counter = 0;
 		int edgecounter = 0;
 		double matrix[][] = new double[vertex][];

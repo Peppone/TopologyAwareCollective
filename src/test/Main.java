@@ -37,7 +37,7 @@ public class Main {
 		Graph g = Generator
 				.readGraphFromMatrixFile(
 						new File(
-								"/home/peppone/git/TopologyAwareCollective/src/test/adj.txt"),
+								"/home/peppone/git/TopologyAwareCollective/src/test/dummygraph.txt"),
 						new File(
 								"/home/peppone/git/TopologyAwareCollective/src/test/demands.txt"));
 		Generator.generateCplexDataFromMatrix(g,
@@ -54,11 +54,11 @@ public class Main {
 		for (Integer i : receiver)
 			System.out.println(i + " " + fav.get(i));
 
-		Broadcast br = new Broadcast(1, g);
-		br.addAvailableReceiver(2);
-		br.addAvailableReceiver(3);
-		br.addAvailableReceiver(4);
-		br.execute();
+//		Broadcast br = new Broadcast(1, g);
+//		br.addAvailableReceiver(2);
+//		br.addAvailableReceiver(3);
+//		br.addAvailableReceiver(4);
+//		br.execute();
 	}
 
 }
