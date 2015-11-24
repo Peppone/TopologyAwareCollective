@@ -1,225 +1,222 @@
 package graph;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.StringTokenizer;
+
+import demand.Demand;
+import demand.DemandList;
 
 public class Graph {
-	private ArrayList<Edge> edges;
-	private HashMap<Integer, Vertex> vertices;
-	private double adjacencyMatrix[][];
-	//private ArrayList<Integer>[] adjacencyList;
-	private boolean finalized;
-	private int link;
-	private int vertex;
-	private int demand;
-
-	public Graph() {
-		edges = new ArrayList<Edge>();
-		vertices = new HashMap<Integer, Vertex>();
-		adjacencyMatrix = null;
-	//	adjacencyList = null;
-		finalized = false;
-		link = 0;
-		demand = 0;
-		vertex = 0;
-
-	}
-
-	public ArrayList<Edge> getEdges() {
-		return edges;
-	}
-
-	public void setEdges(ArrayList<Edge> edges) {
-		this.edges = edges;
-		finalized = false;
-	}
-
-	public void addEdge(Edge e) {
-		finalized = false;
-		edges.add(e);
-		Vertex source = e.getSource();
-		Vertex destination = e.getDestination();
-		if (!vertices.containsKey(source.getId())) {
-			vertices.put(source.getId(), new Vertex(source.getId()));
-			++vertex;
+	int [][] avertex;
+	int [][] bvertex;
+	int [] edge;
+	ArrayList<Integer> sender_edge;
+	ArrayList<Integer> receiver_edge;
+	int n_vertex;
+	int h_edge;
+	int n_edge;
+//	DemandList demands;
+	
+	@SuppressWarnings("unchecked")
+	Graph(Graph g){
+		//TODO Demands should be copied
+		avertex=new int[g.avertex.length][];
+		bvertex=new int[g.bvertex.length][];
+		for(int i=0;i<avertex.length;++i){
+			avertex[i]=g.avertex[i].clone();
+			bvertex[i]=g.bvertex[i].clone();
 		}
-		if (!vertices.containsKey(destination.getId())) {
-			vertices.put(destination.getId(), new Vertex(destination.getId()));
-			vertex++;
-		}
+		edge = new int [g.edge.length];
+		edge = g.edge.clone();
+		n_vertex = g.n_vertex;
+		h_edge = g.h_edge;
+		n_edge = g.n_edge;
+		sender_edge = (ArrayList<Integer>) g.sender_edge.clone();
+		receiver_edge = (ArrayList<Integer>) g.receiver_edge.clone();
+		sender_edge=new ArrayList<Integer>();
+		receiver_edge=new ArrayList<Integer>();
+//		for(int i=0;i<avertex.length;++i){
+//			int se =findEndNodeEdge(i,avertex);
+//			if(se>-1) {
+//				sender_edge.add(i);
+//				receiver_edge.add(i);
+//			}
+//		}
+//		demands=new DemandList();
+		
 	}
-
-	public HashMap<Integer, Vertex> getVertices() {
-		return vertices;
-	}
-
-	public void setVertices(HashMap<Integer, Vertex> vertices) {
-		this.vertices = vertices;
-	}
-
-	public void setAdjacencyMatrix(double adjacencyMatrix[][]) {
-		this.adjacencyMatrix = adjacencyMatrix;
-	}
-
-	public double[][] getAdjacencyMatrix() {
-		return adjacencyMatrix;
-	}
-
-	public int getLink() {
-		return link;
-	}
-
-	public void setLink(int link) {
-		this.link = link;
-	}
-
-	public int getVertex() {
-		return vertex;
-	}
-
-	public void setVertex(int vertex) {
-		this.vertex = vertex;
-	}
-
-	public int getDemand() {
-		return demand;
-	}
-
-	public void setDemand(int demand) {
-		this.demand = demand;
-	}
-
-	public void setFinalized(boolean finalized) {
-		this.finalized = finalized;
-		if (finalized == false)
-			adjacencyMatrix = null;
-	}
-
-	public void removeEdge(Edge e) {
-		setFinalized(false);
-		edges.remove(e);
-		Vertex source = e.getSource();
-		Vertex destination = e.getDestination();
-		boolean removeSource = true;
-		boolean removeDestination = true;
-		for (Edge ed : edges) {
-			Vertex newSource = ed.getSource();
-			if (newSource == source)
-				removeSource = false;
-			if (newSource == destination)
-				removeDestination = false;
-			Vertex newDestination = ed.getDestination();
-			if (newDestination == source)
-				removeSource = false;
-			if (newDestination == destination)
-				removeDestination = false;
-			if (!(removeSource || removeDestination))
-				break;
-		}
-		if (removeSource) {
-			vertices.remove(source);
-			--vertex;
-		}
-		if (removeDestination) {
-			vertices.remove(destination);
-			--vertex;
-		}
-	}
-
-	public int getVertexNumber() {
-		return vertex;
-	}
-
-	public void close() {
-		if (!finalized) {
-			adjacencyMatrix = new double[getVertexNumber()][];
-			for (int i = 0; i < getVertexNumber(); ++i) {
-				adjacencyMatrix[i] = new double[getVertexNumber()];
+	
+	
+	
+	public Graph(String adjMatrixFile, String demandFile){	
+			try {
+				readAdjMatrixFromFile(adjMatrixFile);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			for (Edge ed : edges) {
-				int source = ed.getSource().getId();
-				int dest = ed.getDestination().getId();
-				adjacencyMatrix[source - 1][dest - 1] = ed.getFreeCapacity();
-			}
-			setFinalized(true);
-		}
-	}
-
-	public HashMap<Integer, Integer> favouriteSenders(Set<Integer> sender,
-			Set<Integer> receiver) {
-		// TODO Bisogna renderlo in funzione dei SENDERS/RECEIVERS non di tutti quelli
-		// che in questo momento hanno delle domande.
-		HashMap<Integer, Integer> favourite = new HashMap<Integer, Integer>();
-		int matrix[][] = new int[this.vertex][2];
-		// dimension 2 because 1 is the sender, the second is
-		// the distance ;
-		for (int i = 0; i < this.vertex; ++i) {
-			matrix[i][1] = Integer.MAX_VALUE;
-		}
-		for (Integer i : sender) {
-			HashMap<Integer, Integer> bfs = bfs(i);
-			for (Integer j : receiver) {
-				if (bfs.get(j)<=0){
-					continue;
-				}
-				
-				
-				if (matrix[j - 1][1] > bfs.get(j) && bfs.get(j) > 0) {
-					matrix[j - 1][0] = i;
-					matrix[j - 1][1] = bfs.get(j);
-
-				}
-//				if (matrix[i - 1][1] > bfs.get(j) && bfs.get(j) > 0) {
-//					matrix[i - 1][0] = j;
-//					matrix[i - 1][1] = bfs.get(j);
-//
-//				}
-			}
-		}
-		for (int i = 0; i < matrix.length; ++i) {
-			if (matrix[i][1] < Integer.MAX_VALUE) {
-				favourite.put(i + 1, matrix[i][0]);
-			}
-		}
-		return favourite;
-	}
-
-	public HashMap<Integer, Integer> bfs(int vertex) {
-		LinkedList<Integer> queue = new LinkedList<Integer>();
-		HashMap<Integer, Integer> distance = new HashMap<Integer, Integer>();
-		for (int i = 1; i <= this.vertex; ++i) {
-			if (i == vertex) {
-				distance.put(i, 0);
-			} else {
-				distance.put(i, -1);
-			}
-		}
-		queue.push(vertex);
-		while (!queue.isEmpty()) {
-			int current = queue.removeFirst();
-			for (int i = 0; i < this.vertex; ++i) {
-				if (i == current - 1 || adjacencyMatrix[current-1][i] == 0) {
-					continue;
-				}
-				if (distance.get(i + 1) == -1) {
-					queue.push(i + 1);
-					distance.put(i + 1, distance.get(current) + 1);
+			
+//			try {
+//				readDemandsFromFile(demandFile);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+			
+			sender_edge=new ArrayList<Integer>();
+			receiver_edge=new ArrayList<Integer>();
+			for(int i=0;i<avertex[0].length;++i){
+				int se =findEndNodeEdge(i,avertex);
+				if(se>-1) {
+					sender_edge.add(se);
 				}
 			}
-
+			for(int i=0;i<bvertex[0].length;++i){
+				int se =findEndNodeEdge(i,bvertex);
+				if(se>-1) {
+					receiver_edge.add(se);
+				}
+			}
+//			demands=new DemandList();
+	}
+	
+	private String writeMatrix(String name, int mat[][]){
+		String matrix=name+" = [";
+		for(int i=0;i<mat.length;++i){
+			matrix+="[ ";
+			for(int j=0;j<mat[i].length;++j){
+				matrix+=mat[i][j]+" ";
+			}
+			matrix+="] ";
+		}
+		matrix+="];\n";
+		return matrix;
+	}
+	
+	private String writeVector(String name, int vec[]){
+		String vector=name+" = [";
+		for(int i=0;i<vec.length;++i){
+			vector+=" "+vec[i];
+		}
+		vector+="];\n";
+		return vector;
+	}
+	
+	
+	private String writeArrayList(String name, ArrayList<Integer> al){
+		String vector=name+" = [";
+		for(int i=0;i<al.size();++i){
+			vector+=" "+(al.get(i));
+		}
+		vector+="];\n";
+		return vector;
+	}
+	public String writeCplexCode(){
+		String code="";
+		code+="n_vertex = "+n_vertex+";\n";
+		code+="n_edge = "+n_edge+";\n";
+		code+="h_edge = "+h_edge+";\n";
+//		code+="n_demand= "+demands.getN_demand()+";\n";
+		code+=writeMatrix("avertex",avertex);
+		code+=writeMatrix("bvertex",bvertex);
+		code+=writeVector("edge",edge);
+//		code+=demands.writeCplexCode();
+		code+=writeArrayList("sender_edge",sender_edge);
+		code+=writeArrayList("receiver_edge",receiver_edge);
+		
+		return code;	
+	}
+	
+	private void readAdjMatrixFromFile(String filename) throws IOException{
+		File adjMatrixFile = new File (filename);
+		BufferedReader br = new BufferedReader(new FileReader(adjMatrixFile));
+		String line=br.readLine();
+		StringTokenizer st = new StringTokenizer(line);
+		n_vertex = st.countTokens();
+		n_edge=0;
+		
+		int adjMatrix [][] = new int [n_vertex][];
+		for(int i=0; i<n_vertex;++i){
+			adjMatrix[i]=new int [n_vertex];
+		}
+		int counter =0;
+		for(int i=0;i<n_vertex;++i){
+			
+			Integer value =Integer.parseInt(st.nextToken());
+			adjMatrix[counter][i]=value;
+			if(value>0)n_edge++;
+		}
+		counter ++;
+		while((line=br.readLine())!=null){
+			st = new StringTokenizer(line);
+			for(int i=0;i<n_vertex;++i){
+				Integer value =Integer.parseInt(st.nextToken());
+				adjMatrix[counter][i]=value;
+				if(value>0)	n_edge++;
+			}
+			counter ++;	
 		}
 
-		// Set<Integer> s = distance.keySet();
-		// ArrayList<Integer> toRemove = new ArrayList<Integer>();
-		// for (Integer i : s) {
-		// if (!vertices.containsKey(i)) {
-		// toRemove.add(i);
-		// }
-		// }
-		// s.removeAll(toRemove);
-		return distance;
+		avertex =new int [n_edge][n_vertex];
+		bvertex= new int [n_edge][n_vertex];
+		edge = new int [n_edge];
+		int edgeCounter=0;
+		for(int i=0;i<n_edge;++i){
+			avertex[i]=new int[n_vertex];
+			bvertex[i]=new int[n_vertex];
+		}
+		for(int i=0;i<n_edge;++i){
+			for(int j=i+1;j<n_vertex;++j){
+				if (adjMatrix[i][j] > 0) {
+					avertex[edgeCounter][i]= 1;
+					bvertex[edgeCounter][j]= 1;
+					edge[edgeCounter]=adjMatrix[i][j];
+					edgeCounter++;
+				}
+				if (adjMatrix[j][i] > 0) {
+					avertex[edgeCounter][j]= 1;
+					bvertex[edgeCounter][i]= 1;
+					edge[edgeCounter]=adjMatrix[j][i];
+					edgeCounter++;
+				}
+			}
+		}
+		h_edge = n_edge>>1;
+		br.close();
 	}
-
+	
+//	private void readDemandsFromFile(String filename) throws IOException{
+//		File demandFile = new File (filename);
+//		BufferedReader br = new BufferedReader(new FileReader(demandFile));
+//		String line;
+//		demands= new DemandList();
+//		while((line=br.readLine())!=null){
+//			StringTokenizer st = new StringTokenizer(line);
+//			int source = Integer.parseInt(st.nextToken());
+//			int dest = Integer.parseInt(st.nextToken());
+//			int min_br = Integer.parseInt(st.nextToken());
+//			int max_br = Integer.parseInt(st.nextToken());
+////			int rEdge = findEndNodeEdge(dest,bvertex);
+////			int sEdge = findEndNodeEdge(source,avertex);
+//			Demand d = new Demand(source,dest,/*sEdge,rEdge,*/min_br,max_br,false,0,0);
+//			demands.addDemand(d);
+//		}
+//		br.close();
+//	}
+	
+	public int findEndNodeEdge(int vertex,int[][]matrix){
+		int counter=0;
+		int position=-1;
+		for(int i=0;i<n_edge;++i){
+			if(matrix[i][vertex]==1){
+				counter++;
+				position=i;
+			}
+		}
+		if (counter ==1)return position+1;
+		else return -1;
+		
+	}
 }

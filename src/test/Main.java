@@ -1,64 +1,60 @@
 package test;
 
-import generator.Generator;
-import generator.MyArray;
-import generator.MyMatrix;
 import graph.Graph;
-import graph.Vertex;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import algorithm.Broadcast;
+import utility.ExecuteShellCommand;
+import algorithm.Core;
+
+import commpattern.Broadcast;
 
 public class Main {
 
 	/**
 	 * @param args
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) throws IOException {
-		Vertex a, b, c;
-		MyMatrix<Integer> m = new MyMatrix<Integer>(new Integer(0), 3, 3);
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				m.set(i, j, i + j);
-			}
-		}
-		System.out.println(m.toString());
-		MyArray<Integer> arr = new MyArray<Integer>(new Integer(0), 5);
-		for (int i = 0; i < 5; ++i) {
-			arr.set(i, i);
-		}
-		System.out.println(arr.toString());
-		Graph g = Generator
-				.readGraphFromMatrixFile(
-						new File(
-								"/home/peppone/git/TopologyAwareCollective/src/test/dummygraph.txt"),
-						new File(
-								"/home/peppone/git/TopologyAwareCollective/src/test/demands.txt"));
-		Generator.generateCplexDataFromMatrix(g,
-				"/home/peppone/git/TopologyAwareCollective/src/test/data.dat");
-		g.bfs(3);
-		Set<Integer> set = new HashSet<Integer>();
-		set.add(1);
+	public static void main(String[] args) throws IOException,
+			InterruptedException {
 
-		Set<Integer> receiver = new HashSet<Integer>();
-		receiver.add(2);
-		receiver.add(3);
-		receiver.add(4);
-		HashMap<Integer, Integer> fav = g.favouriteSenders(set, receiver);
-		for (Integer i : receiver)
-			System.out.println(i + " " + fav.get(i));
+		 String base = "/home/peppone/git/TopologyAwareCollective/src/test/";
+		 Graph g = new Graph(base + "dummygraph.txt", base + "demands.txt");
+		System.out.println(g.writeCplexCode());
+		 Broadcast b = new Broadcast(1, new int[] { 2, 3, 4}, new int[] { 10,
+		 10,10 });
+		 b.getMinBitrate(1);
+		 Core c = new Core(10, base + "demands.txt",
+		 "/home/peppone/opl/multidemandallocation/result.txt",
+		 "/home/peppone/opl/multidemandallocation/newdata.txt",
+		 b);
+		 c.execute(g);
+		// ProcessBuilder builder = new ProcessBuilder("/usr/local/bin/oplrun");
+		//
+		//
+		// builder.redirectErrorStream(true);
+		// Process process = builder.start();
+		// process.waitFor();
+		// builder.command("/usr/local/bin/oplrun -h");
+//		String command = "/usr/local/bin/oplrun";
+//		String model = "/home/peppone/opl/multidemandallocation/output.o";//args[1];
+//		String dataFile ="/home/peppone/opl/multidemandallocation/data.dat";// args[2];
+//		String resultFile ="/home/peppone/opl/multidemandallocation/result.txt";
+//		ExecuteShellCommand esc =new ExecuteShellCommand();
+//		Process p=esc.executeCommand(command, "-v", model, dataFile,resultFile);
+//		InputStream stdout = p.getInputStream();
+//		InputStream stderr = p.getErrorStream();
+//		BufferedReader reader = new BufferedReader(
+//				new InputStreamReader(stdout));
+//		;
+//		String line;
+//		while ((line = reader.readLine()) != null) {
+//			System.out.println(line);
+//		}
 
-//		Broadcast br = new Broadcast(1, g);
-//		br.addAvailableReceiver(2);
-//		br.addAvailableReceiver(3);
-//		br.addAvailableReceiver(4);
-//		br.execute();
 	}
-
 }
