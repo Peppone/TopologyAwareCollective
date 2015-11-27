@@ -38,28 +38,15 @@ public class Broadcast implements Collective {
 		this.receiving = new boolean[receiver.length];
 		trxModel = new SimpleModel(100);
 		this.graph = graph;
-		this.favourite_transmitter = new int[receiver.length][3];
+		this.favourite_transmitter = new int[receiver.length][4];
 		HashMap<Integer, Integer[]> visit = graph.modifiedVisit(sender);
 		for (int i = 0; i < receiver.length; ++i) {
 			Integer[] current = visit.get(receiver[i]);
 			// favourite_transmitter[i][0]=bfs[receiver[i]-1];
-			// favourite_transmitter[i][1]=sender;
 			favourite_transmitter[i][0] = current[0];
 			favourite_transmitter[i][1] = sender;
 			favourite_transmitter[i][2] = current[2];
 		}
-//		updateFavouriteTransmitter(2);
-//		updateFavouriteTransmitter(4);
-//		
-//		int cnt = 0;
-//		for (int[] i : favourite_transmitter) {
-//			System.err.print(receiver[cnt] + " ");
-//			for (int j : i) {
-//				System.err.print(j + " ");
-//			}
-//			System.err.println();
-//			cnt++;
-//		}
 	}
 
 	public String generateDemandToString() {
@@ -90,6 +77,9 @@ public class Broadcast implements Collective {
 				continue;
 			demand = new Demand(sender, receiver[i], min_bitrate[i],
 					max_bitrate[i], false, 0, 0, 1, this);
+			if(favourite_transmitter[i][1]==sender){
+				demand.setWeight(100 *favourite_transmitter[i][2]);
+			}
 			dl.addDemand(demand);
 		}
 		for (int i = 0; i < owner.length; ++i) {
@@ -100,6 +90,9 @@ public class Broadcast implements Collective {
 					continue;
 				demand = new Demand(receiver[i], receiver[j], max_bitrate[i],
 						this);
+				if(favourite_transmitter[j][1]==receiver[i]){
+					demand.setWeight(100 *favourite_transmitter[j][2]);
+				}
 				dl.addDemand(demand);
 			}
 		}
@@ -152,8 +145,6 @@ public class Broadcast implements Collective {
 	public void updateTransmissionEvent(Object[] obj) {
 		double now = (Double) obj[0];
 		Demand modifiedDemand = (Demand) obj[1];
-		// modifiedDemand.setAllocated(false);
-		// assert(activeDemands.remove(modifiedDemand));
 		boolean check = removeFromList(modifiedDemand.getSender(),
 				modifiedDemand.getReceiver());
 		assert (check);
@@ -169,12 +160,8 @@ public class Broadcast implements Collective {
 		}
 		Object arr[] = new Object[1];
 		arr[0] = hopCounter;
-		modifiedDemand.setEndTime(trxModel.computeRemainingTransmissionTime(
-				now, modifiedDemand.getStartTime(),
-				modifiedDemand.getEndTime(), modifiedDemand.getMin_bandwidth(),
-				new_bit_rate, arr));
-		modifiedDemand.setStartTime(now);
-		modifiedDemand.setMin_bandwidth(new_bit_rate);
+		trxModel.computeRemainingTransmissionTime(
+				now,new_bit_rate, modifiedDemand, arr);
 		activeDemands.addDemand(modifiedDemand);
 		return;
 

@@ -21,21 +21,20 @@ public class DemandList {
 		sender = new HashSet<Integer>();
 	}
 
-	
-	public static DemandList mergeAllocated(DemandList a, DemandList b){
+	public static DemandList mergeAllocated(DemandList a, DemandList b) {
 		DemandList res = new DemandList();
 		for (Demand d : a.list) {
-			if(d.isAllocated()){
+			if (d.isAllocated()) {
 				res.addDemand(d);
 			}
 		}
 		for (Demand d : b.list) {
-			if(d.isAllocated())
-			res.addDemand(d);
+			if (d.isAllocated())
+				res.addDemand(d);
 		}
 		return res;
 	}
-	
+
 	public static DemandList merge(DemandList a, DemandList b) {
 		DemandList res = new DemandList();
 		for (Demand d : a.list) {
@@ -58,18 +57,18 @@ public class DemandList {
 	}
 
 	public void addDemand(Demand d) {
-		//DEBUG
-		boolean isPresent = false;
-		for(Demand d2:list){
-			if(d.getSender()==d2.getSender() && d.getReceiver()==d2.getReceiver()) {
-				isPresent =true;
-				break;
-			}
-		}
-		assert(!isPresent);
-		//END
-		
-		
+		// // DEBUG
+		// boolean isPresent = false;
+		// for (Demand d2 : list) {
+		// if (d.getSender() == d2.getSender()
+		// && d.getReceiver() == d2.getReceiver()) {
+		// isPresent = true;
+		// break;
+		// }
+		// }
+		// assert (!isPresent);
+		// END
+
 		list.add(d);
 		n_demand++;
 		// int se =d.getS_edge();
@@ -95,8 +94,8 @@ public class DemandList {
 
 	public String writeCplexTrailer() {
 		String code = "";
-//		code += "n_sender = " + n_sender + ";\n";
-//		code += "n_receiver = " + n_receiver + ";\n";
+		// code += "n_sender = " + n_sender + ";\n";
+		// code += "n_receiver = " + n_receiver + ";\n";
 		code += "n_demand = " + n_demand + ";\n";
 		return code;
 	}
@@ -137,15 +136,26 @@ public class DemandList {
 	public boolean remove(Demand d) {
 		return list.remove(d);
 	}
-	
-	public boolean atLeastOneNotAllocatedDemand(){
-		for(Demand d:list){
-			if(!d.isAllocated())return true;
+
+	public boolean atLeastOneNotAllocatedDemand() {
+		for (Demand d : list) {
+			if (!d.isAllocated())
+				return true;
 		}
 		return false;
 	}
-	
 
+	public String printList() {
+		String print = "";
+		for (Demand d : list) {
+			// print += "Sender " + d.getSender() + "; Receiver "
+			// + d.getReceiver() +"; StartTime "+d.getStartTime()+ " EndTime " +
+			// d.getEndTime() + '\n';
+			print += d.getSender() + " -> " + d.getReceiver() + " s:"
+					+ d.getStartTime() + " e:" + d.getEndTime() + "\n";
+		}
+		return print;
+	}
 	// private String writeEdges(){
 	// String sEdges="sender_edge=[";
 	// String rEdges="receiver_edge=[";

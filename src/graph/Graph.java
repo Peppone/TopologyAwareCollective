@@ -50,7 +50,7 @@ public class Graph {
 
 	}
 
-	public Graph(String adjMatrixFile, String demandFile) {
+	public Graph(String adjMatrixFile) {
 		try {
 			readAdjMatrixFromFile(adjMatrixFile);
 		} catch (IOException e) {
@@ -305,5 +305,9 @@ public class Graph {
 		}
 
 		return arr;
+	}
+	
+	public int getEdgeNumber(){
+		return n_edge;
 	}
 }

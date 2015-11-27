@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import utility.ExecuteShellCommand;
 
@@ -25,6 +26,7 @@ public class Core {
 	private int edge;
 	private String resultFile;
 	private String dataFile;
+	private DemandList storyline;
 
 	public Core(int edge, String resultFile, String dataFile,
 			Collective... collective) throws IOException {
@@ -33,40 +35,28 @@ public class Core {
 		 * Collective... collective) throws IOException
 		 */
 		collectives = new ArrayList<Collective>();
-		// File demFile = new File(demandfile);
-		// FileWriter fw = new FileWriter(demFile);
-		// int demand = 0;
 		this.edge = edge;
 		for (Collective c : collective) {
 			collectives.add(c);
-			// String demands = c.generateDemands();
-			// demand += demands.split("\r\n|\r|\n").length;
-			// fw.append(c.generateDemands());
 		}
 		this.dataFile = dataFile;
 		this.resultFile = resultFile;
-		// u = new int[demand][edge];
 		u = null;
-		// u = new ArrayList<Integer[]>(demand);
-		// this.resultFile = resultFile;
-		//
-		// fw.close();
 		time = 0;
 	}
 
-	public void execute(Graph g) throws IOException, InterruptedException {
-
-		// DEBUG
-		int mycounter = 0;
-		while (collectives.size() != 0 && mycounter <10) {
-			// DEBUG
-			mycounter++;
+	public DemandList execute(Graph g) throws IOException, InterruptedException {
+		// TODO: Migliorare la gestione dell'output file generato CPLEX. Fa
+		// troppo schifo a causa del formato delle variabili.
+		
+		storyline = new DemandList();
+		while (collectives.size() != 0) {
 
 			demands = new DemandList();
 			for (Collective c : collectives) {
 				demands.merge(c.generateDemands());
 			}
-			System.err.println(mycounter+" "+demands.getN_demand());
+
 			if (demands.atLeastOneNotAllocatedDemand()) {
 				File data = new File(dataFile);
 				data.delete();
@@ -78,8 +68,8 @@ public class Core {
 				String command = "/usr/local/bin/oplrun";
 				String model = "/home/peppone/opl/multidemandallocation/output.o";// args[1];
 				ExecuteShellCommand esc = new ExecuteShellCommand();
-				String res = esc.executeCommand(command, "-v", model, dataFile,
-						resultFile);
+				StringTokenizer res[] = esc.executeCommand(command, "-v",
+						model, dataFile, resultFile);
 
 				// Leggi l'ouput di CPLEX
 				int allocation[] = new int[demands.getN_demand()];
@@ -89,42 +79,30 @@ public class Core {
 					u.add(i, new Integer[edge]);
 				}
 				// Leggi tutti i dati che servono
-
-				BufferedReader br = new BufferedReader(new StringReader(res));
-				String alloc = br.readLine();
-				String token[] = alloc.split("\\s+");
-				for (int i = 0; i < token.length; ++i) {
-					allocation[i] = Integer.parseInt(token[i]);
+				int tokenCounter = 0;
+				while (res[0].hasMoreTokens()) {
+					allocation[tokenCounter] = Integer.parseInt(res[0]
+							.nextToken());
+					tokenCounter++;
 				}
-
-				String bitRate = br.readLine();
-				token = bitRate.split("\\s+");
-				for (int i = 0; i < token.length; ++i) {
-					bit_rate[i] = Integer.parseInt(token[i]);
+				tokenCounter = 0;
+				while (res[1].hasMoreTokens()) {
+					bit_rate[tokenCounter] = Integer.parseInt(res[1]
+							.nextToken());
+					tokenCounter++;
 				}
-				int counter = 0;
-				String uRow = null;
-				while ((uRow = br.readLine()) != null) {
-					// str = tokenize(uRow);
-
-					token = uRow.split("\\s+");
-
-					Integer u_temp[] = new Integer[edge];
-
-					// Reads only if the demand is allocated
-					if (allocation[counter] > 0) {
-						for (int i = 0; i < token.length; ++i) {
-							u_temp[i] = Integer.parseInt(token[i]);
-						}
+				int rowCounter = 0;
+				while (res[2].hasMoreTokens()) {
+					Integer row[] = new Integer[edge];
+					for (int i = 0; i < edge; ++i) {
+						row[i] = Integer.parseInt(res[2].nextToken());
 					}
-					u.set(counter, u_temp);
-					counter++;
-
+					u.add(rowCounter, row);
+					rowCounter++;
 				}
-				br.close();
 
 				// Comunica tutti i risultati alle varie collectives
-				counter = collectives.get(0).getDemandNumber();
+				int counter = collectives.get(0).getDemandNumber();
 				int collective = 0;
 				ArrayList<Demand> allDemands = demands.getDemands();
 				for (int i = 0; i < demands.getN_demand(); ++i) {
@@ -146,15 +124,13 @@ public class Core {
 					if (d.isAllocated()) {
 						current.updateTransmissionEvent(obj);
 					} else {
+						storyline.addDemand(d);
 						current.startTransmissionEvent(obj);
 					}
 				}
 			}
-			// Avanza il tempo
+			// Avanza il tempo ed effettua il pop degli eventi
 			time = findNextEvent();
-//			//Pop degli eventi
-//			ArrayList<Demand> pop =new ArrayList<Demand>();
-			
 			// Verify end condition
 			ArrayList<Collective> toRemove = new ArrayList<Collective>();
 			for (int i = 0; i < collectives.size(); ++i) {
@@ -162,16 +138,12 @@ public class Core {
 					toRemove.add(collectives.get(i));
 				}
 			}
-			if (toRemove.size() > 0)
+			if (toRemove.size() > 0) {
 				collectives.removeAll(toRemove);
-
+			}
 		}
+		return storyline;
 	}
-
-	// private StringTokenizer tokenize(String string) {
-	// return new StringTokenizer(string,
-	// "abcdefghikjlmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \t \r \n \\[ \\] = ;");
-	// }
 
 	private Object[] toObjectArray(Object... objects) {
 		Object array[] = new Object[objects.length];
@@ -201,7 +173,8 @@ public class Core {
 		}
 		for (Demand d : toRemove) {
 			Collective current = d.getCollective();
-			Object obj[] = toObjectArray(d);			;
+			Object obj[] = toObjectArray(d);
+			;
 			current.endTransmissionEvent(obj);
 		}
 		return minimumTime;

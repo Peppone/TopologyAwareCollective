@@ -11,14 +11,14 @@ import java.util.StringTokenizer;
 public class ExecuteShellCommand {
 
 	
-	public String executeCommand(String command, String option,String model, String data,String result) throws IOException, InterruptedException {
+	public StringTokenizer[] executeCommand(String command, String option,String model, String data,String result) throws IOException, InterruptedException {
 
 
 		ProcessBuilder pb = new ProcessBuilder(command,option,model,data);
 		File resultFile = new File(result);
 		if(!resultFile.exists())resultFile.createNewFile();
 		pb.redirectOutput(resultFile);
-		ProcessBuilder out1 = new ProcessBuilder("egrep", "allocation|bitrate|u = |\\[", result);
+		ProcessBuilder out1 = new ProcessBuilder("egrep", "u =|\\[|\\]", result);
 	//	in.redirectOutput(out.redirectInput());
 		pb.redirectErrorStream(true);
 	//	in.redirectErrorStream(true);
@@ -41,20 +41,22 @@ public class ExecuteShellCommand {
 		String line;
 		String res="";
 		while ((line = reader.readLine()) != null) {
-			StringTokenizer str=tokenize(line);
-				while(str.hasMoreTokens()){
-					res+=str.nextToken()+" ";
-				}
-				res+='\n';
+			res+=line;
 		}
-		System.out.print(res);
-		return res;
+		String field[] = res.split(";");
+	
+		StringTokenizer stz[]=new StringTokenizer[field.length];
+		for(int i =0;i<field.length;++i){
+			stz[i]=tokenize(field[i]);
+		}
+		//System.out.print(res);
+		return stz;
 
 	}
 	
 	private StringTokenizer tokenize(String string) {
 		return new StringTokenizer(string,
-				"abcdefghikjlmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \t \r \n \\[ \\] = ;");
+				"abcdefghikjlmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ \t \r \n \\[ \\] \\s+ = ;");
 	}
 
 }

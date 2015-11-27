@@ -15,6 +15,8 @@ public class Demand {
 	private boolean isAllocated;
 	private double t_start;
 	private double t_end;
+	private double lastUpdateTime;
+	private double transmitted_percentage;
 
 	public Demand(int s, int r,/* int se, int re, */int max_b,
 			Collective collective) {
@@ -36,6 +38,7 @@ public class Demand {
 		this.collective = collective;
 		if (isAllocated) {
 			this.t_start = t_start;
+			lastUpdateTime = t_start;
 			this.t_end = t_end;
 		}
 	}
@@ -120,6 +123,24 @@ public class Demand {
 		return collective;
 	}
 
+	
+	public double getTransmittedPercentage() {
+		return transmitted_percentage;
+	}
+
+	public void setTransmittedPercentage(double transmitted_percentage) {
+		this.transmitted_percentage = transmitted_percentage;
+	}
+	
+
+	public double getLastUpdateTime() {
+		return lastUpdateTime;
+	}
+
+	public void setLastUpdateTime(double lastUpdateTime) {
+		this.lastUpdateTime = lastUpdateTime;
+	}
+
 	public String writeDemand() {
 		return "[ " + sender + " " + receiver +" "+weight+ " ]";
 	}
@@ -132,6 +153,15 @@ public class Demand {
 		return "" + min_bandwidth;
 	}
 	
+	
+	public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
+
 	public String writeWeight(){
 		return "" + weight;
 	}

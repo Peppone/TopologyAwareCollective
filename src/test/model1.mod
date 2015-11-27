@@ -17,7 +17,7 @@ int n_sender=...;
 /************ DEMANDS ************/
 float max_bitrate[1..n_demand]=...;
 float min_bitrate[1..n_demand]=...;
-int demand [1..n_demand][1..2]=...;//Source-destination pairs
+int demand [1..n_demand][1..3]=...;//Source / destination / weight
 int ensure_allocation[1..n_demand]=...;
 int receiver_edge[1..n_receiver]=...;
 int sender_edge[1..n_sender]=...;
@@ -38,7 +38,7 @@ dvar int u[1..n_demand][1..n_edge];
 
 
 /**************************OBJECTIVE**************************/
-maximize sum(i in 1..n_demand)(allocation[i]*bitrate[i]);
+maximize sum(i in 1..n_demand)(allocation[i]*bitrate[i]*demand[i][3]-sum(j in 1..n_edge)u[i][j]);
 /*************************************************************/
 
 subject to {
