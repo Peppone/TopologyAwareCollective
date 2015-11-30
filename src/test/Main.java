@@ -22,7 +22,7 @@ public class Main {
 			InterruptedException {
 
 		String base = "/home/peppone/git/TopologyAwareCollective/src/test/";
-		Graph g = new Graph(base + "list.txt");
+		Graph g = new Graph(base + "graph.txt");
 		int res []=g.bfs(2);
 //		for(int i:res){
 //			System.out.print(i+" ");
