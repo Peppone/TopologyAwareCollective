@@ -12,13 +12,12 @@ public class Graph {
 	int[][] avertex;
 	int[][] bvertex;
 	int[] edge;
+	ArrayList<ArrayList<Integer>> list;
 	ArrayList<Integer> sender_edge;
 	ArrayList<Integer> receiver_edge;
 	int n_vertex;
 	int h_edge;
 	int n_edge;
-
-	// DemandList demands;
 
 	@SuppressWarnings("unchecked")
 	Graph(Graph g) {
@@ -39,20 +38,12 @@ public class Graph {
 		sender_edge = new ArrayList<Integer>();
 		receiver_edge = new ArrayList<Integer>();
 
-		// for(int i=0;i<avertex.length;++i){
-		// int se =findEndNodeEdge(i,avertex);
-		// if(se>-1) {
-		// sender_edge.add(i);
-		// receiver_edge.add(i);
-		// }
-		// }
-		// demands=new DemandList();
-
 	}
 
 	public Graph(String adjMatrixFile) {
 		try {
-			readAdjMatrixFromFile(adjMatrixFile);
+			//readAdjMatrixFromFile(adjMatrixFile);
+			readAdjListFromFile(adjMatrixFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -123,10 +114,60 @@ public class Graph {
 		code += writeMatrix("avertex", avertex);
 		code += writeMatrix("bvertex", bvertex);
 		code += writeVector("max_capacity", edge);
-		// code+=demands.writeCplexCode();
 		code += writeArrayList("sender_edge", sender_edge);
 		code += writeArrayList("receiver_edge", receiver_edge);
 		return code;
+	}
+
+	private void readAdjListFromFile(String filename) throws IOException {
+		File adjListFile = new File(filename);
+		BufferedReader br = new BufferedReader(new FileReader(adjListFile));
+		String line = br.readLine();
+		n_vertex = Integer.parseInt(line);
+		int adjMatrix[][] = new int[n_vertex][];
+		for (int i = 0; i < n_vertex; ++i) {
+			adjMatrix[i] = new int[n_vertex];
+		}
+		while ((line = br.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, ";");
+			int current_vertex = Integer.parseInt(st.nextToken());
+			while (st.hasMoreTokens()) {
+				String vert = st.nextToken();
+				StringTokenizer single = new StringTokenizer(vert, ", \\s++");
+				adjMatrix[current_vertex-1][Integer.parseInt(single.nextToken()) - 1] = Integer
+						.parseInt(single.nextToken());
+				n_edge++;
+			}
+
+		}
+
+		avertex = new int[n_edge][n_vertex];
+		bvertex = new int[n_edge][n_vertex];
+		edge = new int[n_edge];
+		int edgeCounter = 0;
+		for (int i = 0; i < n_edge; ++i) {
+			avertex[i] = new int[n_vertex];
+			bvertex[i] = new int[n_vertex];
+		}
+		for (int i = 0; i < n_edge; ++i) {
+			for (int j = i + 1; j < n_vertex; ++j) {
+				if (adjMatrix[i][j] > 0) {
+					avertex[edgeCounter][i] = 1;
+					bvertex[edgeCounter][j] = 1;
+					edge[edgeCounter] = adjMatrix[i][j];
+					edgeCounter++;
+				}
+				if (adjMatrix[j][i] > 0) {
+					avertex[edgeCounter][j] = 1;
+					bvertex[edgeCounter][i] = 1;
+					edge[edgeCounter] = adjMatrix[j][i];
+					edgeCounter++;
+				}
+			}
+		}
+		h_edge = n_edge >> 1;
+		br.close();
+
 	}
 
 	private void readAdjMatrixFromFile(String filename) throws IOException {
@@ -231,12 +272,12 @@ public class Graph {
 		}
 		return result;
 	}
+
 	/**
-	 * This method returns the modified visit for a given root
-	 * The visit consists of a set of array with these values:
-	 * 0 - the maximum availability on the path
-	 * 1 - the parent node in the path
-	 * 2 - the number of hops between source and destination.
+	 * This method returns the modified visit for a given root The visit
+	 * consists of a set of array with these values: 0 - the maximum
+	 * availability on the path 1 - the parent node in the path 2 - the number
+	 * of hops between source and destination.
 	 */
 	public HashMap<Integer, Integer[]> modifiedVisit(int root) {
 
@@ -247,7 +288,7 @@ public class Graph {
 		value[2] = 0;
 		map.put(root, value);
 		// ArrayList <Integer> node = new ArrayList<Integer>();
-		map = modifiedVisitRecursive(root, Integer.MAX_VALUE, map,0);
+		map = modifiedVisitRecursive(root, Integer.MAX_VALUE, map, 0);
 		value[0] = -1;
 		map.put(root, value);
 		return map;
@@ -256,7 +297,8 @@ public class Graph {
 	private HashMap<Integer, Integer[]> modifiedVisitRecursive(int root,
 			int max_bw, HashMap<Integer, Integer[]> map, int depth) {
 		// Cerca figli validi
-		ArrayList<Integer> children = searchValidNodes(root, max_bw, map, depth+1);
+		ArrayList<Integer> children = searchValidNodes(root, max_bw, map,
+				depth + 1);
 		// If no figli validi, return map;
 		if (children.isEmpty())
 			return map;
@@ -288,8 +330,7 @@ public class Graph {
 						int minimum = (max_bw < edge[i]) ? max_bw : edge[i];
 						Integer previous_value[] = map.get(j + 1);
 						if (previous_value[0] > minimum
-								|| (previous_value[0] == minimum
-								&& previous_value[2] <= depth))
+								|| (previous_value[0] == minimum && previous_value[2] <= depth))
 							break;
 						Integer[] new_value = previous_value;
 						new_value[0] = minimum;
@@ -306,8 +347,8 @@ public class Graph {
 
 		return arr;
 	}
-	
-	public int getEdgeNumber(){
+
+	public int getEdgeNumber() {
 		return n_edge;
 	}
 }
