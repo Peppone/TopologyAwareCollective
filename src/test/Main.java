@@ -22,7 +22,7 @@ public class Main {
 			InterruptedException {
 
 		String base = "/home/peppone/git/TopologyAwareCollective/src/test/";
-		Graph g = new Graph(base + "dummygraph.txt");
+		Graph g = new Graph(base + "graph.txt");
 		int res []=g.bfs(2);
 //		for(int i:res){
 //			System.out.print(i+" ");
@@ -31,6 +31,7 @@ public class Main {
 		HashMap<Integer,Integer[]>map=g.modifiedVisit(3);;
 		Broadcast b = new Broadcast(1, new int[] { 2, 3, 4,5,6,7,8,9}, new int[] { 10,
 				10, 10,10,10,10,10,10 },g);
+		//Broadcast b = new Broadcast(1, new int[] {2,3,4}, new int[] { 10,10,10},g);
 	//	b.getMinBitrate(1);
 		String dataFile = "/home/peppone/opl/multidemandallocation/data.dat";// args[2];
 		String resultFile = "/home/peppone/opl/multidemandallocation/resultpro.txt";
