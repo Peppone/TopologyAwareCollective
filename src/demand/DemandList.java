@@ -188,5 +188,9 @@ public class DemandList {
 		}
 		return goal;
 	}
+	
+	public Demand getDemand(int index){
+		return list.get(index);
+	}
 
 }

@@ -14,6 +14,7 @@ public class SimpleModel implements TransmissionModel {
 	public double computeTotalTransmissionTime(double now, int bw, Object[] obj) {
 		Integer nHops = (Integer)obj[0];
 		return now + 1.0*(nHops*messageSize)/bw;
+		
 	}
 
 	@Override

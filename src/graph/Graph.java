@@ -18,6 +18,7 @@ public class Graph {
 	int n_vertex;
 	int h_edge;
 	int n_edge;
+	ArrayList<String[]> pairs;
 
 	@SuppressWarnings("unchecked")
 	Graph(Graph g) {
@@ -37,7 +38,7 @@ public class Graph {
 		receiver_edge = (ArrayList<Integer>) g.receiver_edge.clone();
 		sender_edge = new ArrayList<Integer>();
 		receiver_edge = new ArrayList<Integer>();
-
+		pairs=(ArrayList<String[]>) g.pairs.clone();
 	}
 
 	public Graph(String adjMatrixFile) {
@@ -61,6 +62,9 @@ public class Graph {
 			if (se > -1) {
 				receiver_edge.add(se);
 			}
+		}
+		for(int i=0;i<edge.length;++i){
+			
 		}
 	}
 
@@ -128,15 +132,19 @@ public class Graph {
 		for (int i = 0; i < n_vertex; ++i) {
 			adjMatrix[i] = new int[n_vertex];
 		}
+		pairs=new ArrayList<String []>();
+		
 		while ((line = br.readLine()) != null) {
 			StringTokenizer st = new StringTokenizer(line, ";");
 			int current_vertex = Integer.parseInt(st.nextToken());
 			while (st.hasMoreTokens()) {
 				String vert = st.nextToken();
 				StringTokenizer single = new StringTokenizer(vert, ", \\s++");
-				adjMatrix[current_vertex-1][Integer.parseInt(single.nextToken()) - 1] = Integer
+				int dest =Integer.parseInt(single.nextToken());
+				adjMatrix[current_vertex-1][ dest - 1] = Integer
 						.parseInt(single.nextToken());
 				n_edge++;
+				
 			}
 
 		}
@@ -155,12 +163,20 @@ public class Graph {
 					avertex[edgeCounter][i] = 1;
 					bvertex[edgeCounter][j] = 1;
 					edge[edgeCounter] = adjMatrix[i][j];
+					String end[] = new String[2];
+					end[0]=""+(i+1);
+					end[1]=""+(j+1);
+					pairs.add(end);
 					edgeCounter++;
 				}
 				if (adjMatrix[j][i] > 0) {
 					avertex[edgeCounter][j] = 1;
 					bvertex[edgeCounter][i] = 1;
 					edge[edgeCounter] = adjMatrix[j][i];
+					String end[] = new String[2];
+					end[0]=""+(j+1);
+					end[1]=""+(i+1);
+					pairs.add(end);
 					edgeCounter++;
 				}
 			}
@@ -353,5 +369,9 @@ public class Graph {
 
 	public int getEdgeNumber() {
 		return n_edge;
+	}
+	
+	public String[] edge(int edge){
+		return pairs.get(edge);
 	}
 }

@@ -160,6 +160,7 @@ public class Broadcast implements Collective {
 		allocatedDemand.setStartTime(now);
 		allocatedDemand.setEndTime(trxModel.computeTotalTransmissionTime(now,
 				bit_rate, arr));
+		allocatedDemand.setMin_bandwidth(bit_rate);
 		setReceivingFromReceiver(allocatedDemand.getReceiver(), true);
 		allocatedDemand.setAllocated(true);
 		//activeDemands.addDemand(allocatedDemand);
@@ -169,12 +170,14 @@ public class Broadcast implements Collective {
 
 	@Override
 	public void updateTransmissionEvent(Object[] obj) {
+		//TODO Copiare su ModifiedDemand la vecchia banda
 		double now = (Double) obj[0];
 		Demand modifiedDemand = (Demand) obj[1];
-		removeFromList(modifiedDemand.getSender(),
+		Demand old=removeFromList(modifiedDemand.getSender(),
 				modifiedDemand.getReceiver());
 		//assert (check);
 		modifiedDemand.setAllocated(true);
+		modifiedDemand.setMin_bandwidth(old.getMin_bandwidth());
 		Integer[] link = (Integer[]) obj[2];
 		int new_bit_rate = (Integer) obj[3];
 		int destination = modifiedDemand.getReceiver();
@@ -268,7 +271,7 @@ public class Broadcast implements Collective {
 		return receiver[owner];
 	}
 
-	public boolean removeFromList(int sender, int receiver) {
+	public Demand removeFromList(int sender, int receiver) {
 		Demand toRemove = null;
 		boolean wasFound = false;
 		for (Demand d : activeDemands.getDemands()) {
@@ -283,7 +286,7 @@ public class Broadcast implements Collective {
 		if (wasFound) {
 			activeDemands.remove(toRemove);
 		}
-		return wasFound;
+		return toRemove;
 	}
 
 
