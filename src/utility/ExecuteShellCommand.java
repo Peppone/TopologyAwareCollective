@@ -18,7 +18,7 @@ public class ExecuteShellCommand {
 		File resultFile = new File(result);
 		if(!resultFile.exists())resultFile.createNewFile();
 		pb.redirectOutput(resultFile);
-		ProcessBuilder out1 = new ProcessBuilder("egrep", "u =|\\[|\\]", result);
+		ProcessBuilder out1 = new ProcessBuilder("egrep", "u =|\\[|\\]|0 0 0 0", result);
 	//	in.redirectOutput(out.redirectInput());
 		pb.redirectErrorStream(true);
 	//	in.redirectErrorStream(true);

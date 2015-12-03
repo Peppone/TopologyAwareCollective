@@ -3,6 +3,9 @@ package demand;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import commpattern.Broadcast;
+import commpattern.Collective;
+
 public class DemandList {
 	// DIREI DI TOGLIERE N_sender, N_receiver, N-Demand
 	private ArrayList<Demand> list;
@@ -57,33 +60,17 @@ public class DemandList {
 	}
 
 	public void addDemand(Demand d) {
-		// // DEBUG
-		// boolean isPresent = false;
-		// for (Demand d2 : list) {
-		// if (d.getSender() == d2.getSender()
-		// && d.getReceiver() == d2.getReceiver()) {
-		// isPresent = true;
-		// break;
-		// }
-		// }
-		// assert (!isPresent);
-		// END
 
 		list.add(d);
 		n_demand++;
-		// int se =d.getS_edge();
-		// int re =d.getR_edge();
-		// HashSet<Integer> sender=new HashSet<Integer>();
-		// HashSet<Integer> receiver=new HashSet<Integer>();
-		// if(!sender_edge.contains(se)){
+
 		if (!sender.contains(d.getSender())) {
 			n_sender++;
-			// sender_edge.add(se);
+
 		}
-		// if(!receiver_edge.contains(re)){
+
 		if (!receiver.contains(d.getReceiver())) {
 			n_receiver++;
-			// receiver_edge.add(re);
 		}
 	}
 
@@ -94,8 +81,6 @@ public class DemandList {
 
 	public String writeCplexTrailer() {
 		String code = "";
-		// code += "n_sender = " + n_sender + ";\n";
-		// code += "n_receiver = " + n_receiver + ";\n";
 		code += "n_demand = " + n_demand + ";\n";
 		return code;
 	}
@@ -148,29 +133,60 @@ public class DemandList {
 	public String printList() {
 		String print = "";
 		for (Demand d : list) {
-			// print += "Sender " + d.getSender() + "; Receiver "
-			// + d.getReceiver() +"; StartTime "+d.getStartTime()+ " EndTime " +
-			// d.getEndTime() + '\n';
 			print += d.getSender() + " -> " + d.getReceiver() + " s:"
 					+ d.getStartTime() + " e:" + d.getEndTime() + "\n";
 		}
 		return print;
 	}
-	// private String writeEdges(){
-	// String sEdges="sender_edge=[";
-	// String rEdges="receiver_edge=[";
-	// for(Integer i : sender_edge){
-	// sEdges+=" "+i;
-	// }
-	// sEdges+=" ];\n";
-	//
-	// for(Integer i : receiver_edge){
-	// rEdges+=" "+i;
-	// }
-	//
-	// rEdges+=" ];\n";
-	//
-	// return sEdges+rEdges;
-	// }
+
+	public String writeBroadcastGoalFile() {
+		String goal="";
+		Broadcast b = (Broadcast)list.get(0).getCollective();
+		int root = b.getSender();
+		int destN =b.getReceiver().length;
+		goal+="num_ranks "+(1+destN)+"\n";
+		String sender= "";
+
+			sender+="rank "+0+"{\n\t";
+		String receiver[]=new String [destN];
+		int [] rcvFlag  = new int[destN];
+		int sndFlag = 0;
+		
+		for(int i=0;i<destN;++i){
+			receiver[i]="";
+			receiver[i]+="rank "+(i+1)+"{\n\t";
+		}
+		int dest;
+		int src;
+		for(Demand d:list){
+			src = d.getSender();
+			dest = d.getReceiver();
+			if(src == root){
+				sender+="l"+sndFlag+": send 100b to "+(b.getIndexFromReceiver(dest)+1)+" tag 0\n\t";
+				if(sndFlag !=0){
+					sender+="l"+(sndFlag)+" requires l"+(sndFlag-1)+"\n\t";
+				}
+				sndFlag++;
+			}else{
+				receiver[b.getIndexFromReceiver(src)]+="l"+rcvFlag[b.getIndexFromReceiver(src)]+": send 100b to "+(b.getIndexFromReceiver(dest)+1)+" tag 0\n\t";
+				if(rcvFlag[b.getIndexFromReceiver(src)] !=0){
+					receiver[b.getIndexFromReceiver(src)]+="l"+rcvFlag[b.getIndexFromReceiver(src)]+" requires l"+(rcvFlag[b.getIndexFromReceiver(src)]-1)+"\n\t";
+				}
+				rcvFlag[b.getIndexFromReceiver(src)]++;
+			}
+			receiver[b.getIndexFromReceiver(dest)]+="l"+rcvFlag[b.getIndexFromReceiver(dest)]+": recv 100b from "+(b.getIndexFromReceiver(src)+1)+" tag 0\n\t";
+			if(rcvFlag[b.getIndexFromReceiver(dest)]!=0){
+				receiver[b.getIndexFromReceiver(dest)]+="l"+(rcvFlag[b.getIndexFromReceiver(dest)])+" requires l"+(rcvFlag[b.getIndexFromReceiver(dest)]-1)+"\n\t";
+			}
+			rcvFlag[b.getIndexFromReceiver(dest)]++;
+		}
+		sender+="}\n";
+		goal+=sender+"\n";
+		
+		for(int i=0; i<n_receiver;++i){
+			goal+=receiver[i]+"\n}\n";
+		}
+		return goal;
+	}
 
 }

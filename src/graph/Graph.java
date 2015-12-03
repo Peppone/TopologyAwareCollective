@@ -332,6 +332,9 @@ public class Graph {
 						if (previous_value[0] > minimum
 								|| (previous_value[0] == minimum && previous_value[2] <= depth))
 							break;
+//						if(previous_value[0] == minimum && previous_value[2] == depth){
+//							
+//						}
 						Integer[] new_value = previous_value;
 						new_value[0] = minimum;
 						new_value[1] = root;

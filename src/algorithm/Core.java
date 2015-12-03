@@ -51,7 +51,9 @@ public class Core {
 		
 		storyline = new DemandList();
 		while (collectives.size() != 0) {
-
+			//DEBUG
+			long start = System.nanoTime();
+			//
 			demands = new DemandList();
 			for (Collective c : collectives) {
 				demands.merge(c.generateDemands());
@@ -141,6 +143,7 @@ public class Core {
 			if (toRemove.size() > 0) {
 				collectives.removeAll(toRemove);
 			}
+			System.out.println("finita iterazione in "+(System.nanoTime()-start)/1E9);
 		}
 		return storyline;
 	}

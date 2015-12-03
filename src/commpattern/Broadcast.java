@@ -97,7 +97,33 @@ public class Broadcast implements Collective {
 			}
 		}
 		activeDemands = dl;
+//		//DEBUG
+//		System.out.println("bw tx hop w ");
+//		for(int[] i : favourite_transmitter){
+//			for(int j:i){
+//				System.out.print(j+" ");
+//			}
+//			System.out.println();
+//		}
+//		System.out.println();
+//		//
 		return dl;
+	}
+
+	public int getSender() {
+		return sender;
+	}
+
+	public void setSender(int sender) {
+		this.sender = sender;
+	}
+
+	public int[] getReceiver() {
+		return receiver;
+	}
+
+	public void setReceiver(int[] receiver) {
+		this.receiver = receiver;
 	}
 
 	public int getMinBitrate(int index) {
@@ -145,9 +171,9 @@ public class Broadcast implements Collective {
 	public void updateTransmissionEvent(Object[] obj) {
 		double now = (Double) obj[0];
 		Demand modifiedDemand = (Demand) obj[1];
-		boolean check = removeFromList(modifiedDemand.getSender(),
+		removeFromList(modifiedDemand.getSender(),
 				modifiedDemand.getReceiver());
-		assert (check);
+		//assert (check);
 		modifiedDemand.setAllocated(true);
 		Integer[] link = (Integer[]) obj[2];
 		int new_bit_rate = (Integer) obj[3];
@@ -172,7 +198,8 @@ public class Broadcast implements Collective {
 		Demand d = (Demand) obj[0];
 		setOwnerFromReceiver(d.getReceiver(), true);
 		updateFavouriteTransmitter(d.getReceiver());
-		assert (activeDemands.remove(d));
+		activeDemands.remove(d);
+		//assert ();
 		return;
 
 	}
@@ -223,6 +250,14 @@ public class Broadcast implements Collective {
 				this.receiving[i] = b;
 				return;
 			}
+	}
+	
+	public int getIndexFromReceiver(int receiver) {
+		for (int i = 0; i < this.receiver.length; i++)
+			if (this.receiver[i] == receiver) {
+				return i;
+			}
+			return -1;
 	}
 
 	public int getReceiverFromReceiving(int receiving) {
