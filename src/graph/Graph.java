@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
 public class Graph {
@@ -135,6 +136,7 @@ public class Graph {
 		pairs=new ArrayList<String []>();
 		
 		while ((line = br.readLine()) != null) {
+			line=line.trim();
 			StringTokenizer st = new StringTokenizer(line, ";");
 			int current_vertex = Integer.parseInt(st.nextToken());
 			while (st.hasMoreTokens()) {
@@ -295,8 +297,7 @@ public class Graph {
 	 * availability on the path 1 - the parent node in the path 2 - the number
 	 * of hops between source and destination.
 	 */
-	public HashMap<Integer, Integer[]> modifiedVisit(int root) {
-
+	public HashMap<Integer, Integer[]> modifiedVisit(int root, HashSet<Integer> possibleReceiver) {
 		HashMap<Integer, Integer[]> map = new HashMap<Integer, Integer[]>();
 		Integer[] value = new Integer[3];
 		value[1] = root;
@@ -304,13 +305,13 @@ public class Graph {
 		value[2] = 0;
 		map.put(root, value);
 		// ArrayList <Integer> node = new ArrayList<Integer>();
-		map = modifiedVisitRecursive(root, Integer.MAX_VALUE, map, 0);
+		map = modifiedVisitRecursive(root, possibleReceiver, Integer.MAX_VALUE, map, 0);
 		value[0] = -1;
 		map.put(root, value);
 		return map;
 	}
 
-	private HashMap<Integer, Integer[]> modifiedVisitRecursive(int root,
+	private HashMap<Integer, Integer[]> modifiedVisitRecursive(int root, HashSet <Integer> receiver,
 			int max_bw, HashMap<Integer, Integer[]> map, int depth) {
 		// Cerca figli validi
 		ArrayList<Integer> children = searchValidNodes(root, max_bw, map,
@@ -318,10 +319,10 @@ public class Graph {
 		// If no figli validi, return map;
 		if (children.isEmpty())
 			return map;
-
 		// Ricorsione sui figli
 		for (Integer i : children) {
-			map = modifiedVisitRecursive(i, map.get(i)[0], map, depth + 1);
+	//		if(!receiver.contains(i))
+			map = modifiedVisitRecursive(i, receiver, map.get(i)[0], map, depth + 1);
 		}
 
 		return map;

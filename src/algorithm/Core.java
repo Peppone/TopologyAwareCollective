@@ -108,7 +108,7 @@ public class Core {
 					rowCounter++;
 				}
 				// Crea il file per il simulatore
-				writeDotFile(demands, u, allocation,iteration_counter);
+			//	writeDotFile(demands, u, allocation,iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();
@@ -130,14 +130,14 @@ public class Core {
 					Object obj[] = toObjectArray(time, d, u.get(i),
 							bit_rate[i], index);
 					if (d.isAllocated()) {
-						// DEBUG
-						System.err.println("Ci siamo");
-						System.err.println("Src: " + d.getSender() + ", Dest: "
-								+ d.getReceiver() + ", Min:  "
-								+ d.getMin_bandwidth() + ", Start:  "
-								+ d.getStartTime() + "  " + d.getEndTime()
-								+ "  " + d.getWeight());
-						//
+//						// DEBUG
+//						System.err.println("Ci siamo");
+//						System.err.println("Src: " + d.getSender() + ", Dest: "
+//								+ d.getReceiver() + ", Min:  "
+//								+ d.getMin_bandwidth() + ", Start:  "
+//								+ d.getStartTime() + "  " + d.getEndTime()
+//								+ "  " + d.getWeight());
+//						//
 						current.updateTransmissionEvent(obj);
 					} else {
 						storyline.addDemand(d);
