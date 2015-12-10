@@ -30,18 +30,18 @@ public class Core {
 	private DemandList storyline;
 	private Graph graph;
 
-	public Core(int edge, String resultFile, String dataFile, String dotFile, Graph graph,
+	public Core(String resultFile, String dataFile, String dotFile, Graph graph,
 			Collective... collective) throws IOException {
 		/**
 		 * public Core(int edge, String demandfile, String resultFile,
 		 * Collective... collective) throws IOException
 		 */
 		collectives = new ArrayList<Collective>();
-		this.edge = edge;
 		for (Collective c : collective) {
 			collectives.add(c);
 		}
 		this.graph = graph;
+		this.edge=graph.getEdgeNumber();
 		this.dataFile = dataFile;
 		this.resultFile = resultFile;
 		this.dotFile = dotFile;
@@ -49,7 +49,7 @@ public class Core {
 		time = 0;
 	}
 
-	public DemandList execute(Graph g) throws IOException, InterruptedException {
+	public DemandList execute() throws IOException, InterruptedException {
 		// TODO: Migliorare la gestione dell'output file generato CPLEX. Fa
 		// troppo schifo a causa del formato delle variabili.
 
@@ -68,8 +68,8 @@ public class Core {
 				File data = new File(dataFile);
 				data.delete();
 				FileWriter fw = new FileWriter(data);
-				fw.write(g.writeCplexTrailer() + demands.writeCplexTrailer()
-						+ g.writeCplexFooter() + demands.writeCplexFooter());
+				fw.write(graph.writeCplexTrailer() + demands.writeCplexTrailer()
+						+ graph.writeCplexFooter() + demands.writeCplexFooter());
 				fw.close();
 				// EXECUTE CPLEX
 				String command = "/usr/local/bin/oplrun";

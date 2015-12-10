@@ -31,7 +31,7 @@ float max_capacity [1..n_edge]=...;
 
 /************VARIABLES************/
 dvar int allocation[1..n_demand];
-dvar int bitrate [1..n_demand];//[1..n_edge];
+dvar int bitrate [1..n_demand];
 dvar int u[1..n_demand][1..n_edge];
 /*********************************/
 
@@ -84,7 +84,24 @@ subject to {
   			sum(i in 1..n_demand)u[i][receiver_edge[j]]<=1;
   			
   		//AVOID MULTI-Sending for a single node
-  		forall(j in 1..n_sender)
+ 		forall(j in 1..n_sender)
   			sum(i in 1..n_demand)u[i][sender_edge[j]]<=1;
-
+  			
+  		//AVOID Cycles
+  		forall(d in 1..n_demand){
+  			forall(v in 1..n_vertex){  		
+   				sum(l in 1..n_edge)u[d][l]*avertex[l][v]<=1;
+   				sum(l in 1..n_edge)u[d][l]*bvertex[l][v]<=1;
+ 				}  		  		
+ 		 }
+ 		 
+ 		 forall(d in 1..(n_demand-1)){
+ 		 	forall(f in (d+1)..n_demand){
+ 		 			 	if(demand[d][2]==demand[f][2]){
+ 		 			 	allocation[d]*allocation[f]==0; 		 			 	 		
+ 		 		} 		 	
+ 		 	} 		 
+ 		 }
+ 		  		
+  		
 }
