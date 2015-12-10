@@ -25,6 +25,7 @@ public class Main {
 		Graph mesh = new Graph(base + "mesh.txt");
 		Graph line = new Graph(base + "line.txt");
 		Graph custom = new Graph(base + "custom.txt");
+		Graph mesh2d = new Graph(base + "2dtorus.txt");
 		Broadcast bMesh = new Broadcast(1,
 				new int[] { 2, 3, 4, 5, 6, 7, 8, 9 }, new int[] { 100, 100,
 						100, 100, 100, 100, 100, 100, 100 }, mesh);
@@ -36,6 +37,9 @@ public class Main {
 	Broadcast bCustom = new Broadcast(1,
 				new int[] { 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18 }, new int[] { 100, 100,
 				100, 100, 100, 100, 100, 100, 100, 100,100,100,100,100,100,100,100 }, custom);
+	Broadcast bMesh2d =  new Broadcast(1,
+			new int[] {2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16}, new int[] { 100, 100,
+					100, 100, 100, 100, 100, 100, 100, 100,100,100,100,100,100},mesh2d);
 	/*
 		Broadcast bCustom = new Broadcast(1,
 				new int[] { 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14}, new int[] { 100, 100,
@@ -65,7 +69,8 @@ public class Main {
 		//Core c = new Core(resultFile, dataFile, dotFile, tree, bTree);
 		//Core c = new Core(resultFile, dataFile, dotFile, mesh, bMesh);
 		//Core c = new Core(resultFile, dataFile, dotFile, maciej, mac);
-		Core c = new Core(resultFile, dataFile, dotFile, custom, bCustom);
+		//Core c = new Core(resultFile, dataFile, dotFile, custom, bCustom);
+		Core c = new Core(resultFile, dataFile, dotFile, mesh2d, bMesh2d);
 		long startTime = System.nanoTime();
 		DemandList result = c.execute();
 		long endTime = System.nanoTime();
