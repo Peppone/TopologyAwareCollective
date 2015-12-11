@@ -39,7 +39,7 @@ public class Main {
 				100, 100, 100, 100, 100, 100, 100, 100,100,100,100,100,100,100,100 }, custom);
 	Broadcast bMesh2d =  new Broadcast(1,
 			new int[] {2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16}, new int[] { 100, 100,
-					100, 100, 100, 100, 100, 100, 100, 100,100,100,100,100,100},mesh2d);
+					100, 100, 100, 100, 100, 100, 100, 100,100,100,100,100,100},mesh);
 	/*
 		Broadcast bCustom = new Broadcast(1,
 				new int[] { 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14}, new int[] { 100, 100,
@@ -51,8 +51,8 @@ public class Main {
 		// Broadcast b = new Broadcast(3, new int[] { 1, 2, 4 }, new int[] {
 		// 100,
 		// 100, 100 }, g);
-		Broadcast bTree = new Broadcast(1, new int[] { 8, 2, 3, 4, 5, 6, 7 },
-				new int[] { 100, 100, 100, 100, 100, 100, 100 }, tree);
+		Broadcast bTree = new Broadcast(1, new int[] {2, 3, 4, 5, 6, 7,8,9,10,11,12,13,14,15,16},
+				new int[] { 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,100,100 }, tree);
 		Broadcast bLine = new Broadcast(1, new int[] { 2, 3, 4, 5 }, new int[] {
 				100, 100, 100, 100 }, line);
 		// Broadcast b2 = new Broadcast(2, new int[] {3,4}, new int[]
@@ -67,10 +67,10 @@ public class Main {
 		//Core c = new Core(resultFile, dataFile, dotFile, dummy, bDummy);
 		//Core c = new Core(resultFile, dataFile, dotFile, line, bLine);
 		//Core c = new Core(resultFile, dataFile, dotFile, tree, bTree);
-		//Core c = new Core(resultFile, dataFile, dotFile, mesh, bMesh);
+		Core c = new Core(resultFile, dataFile, dotFile, mesh, bMesh2d);
 		//Core c = new Core(resultFile, dataFile, dotFile, maciej, mac);
 		//Core c = new Core(resultFile, dataFile, dotFile, custom, bCustom);
-		Core c = new Core(resultFile, dataFile, dotFile, mesh2d, bMesh2d);
+	//	Core c = new Core(resultFile, dataFile, dotFile, mesh2d, bMesh2d);
 		long startTime = System.nanoTime();
 		DemandList result = c.execute();
 		long endTime = System.nanoTime();

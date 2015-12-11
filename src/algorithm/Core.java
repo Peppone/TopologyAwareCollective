@@ -2,11 +2,9 @@ package algorithm;
 
 import graph.Graph;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -30,8 +28,8 @@ public class Core {
 	private DemandList storyline;
 	private Graph graph;
 
-	public Core(String resultFile, String dataFile, String dotFile, Graph graph,
-			Collective... collective) throws IOException {
+	public Core(String resultFile, String dataFile, String dotFile,
+			Graph graph, Collective... collective) throws IOException {
 		/**
 		 * public Core(int edge, String demandfile, String resultFile,
 		 * Collective... collective) throws IOException
@@ -41,7 +39,7 @@ public class Core {
 			collectives.add(c);
 		}
 		this.graph = graph;
-		this.edge=graph.getEdgeNumber();
+		this.edge = graph.getEdgeNumber();
 		this.dataFile = dataFile;
 		this.resultFile = resultFile;
 		this.dotFile = dotFile;
@@ -54,7 +52,7 @@ public class Core {
 		// troppo schifo a causa del formato delle variabili.
 
 		storyline = new DemandList();
-		int iteration_counter=0;
+		int iteration_counter = 0;
 		while (collectives.size() != 0) {
 			// DEBUG
 			long start = System.nanoTime();
@@ -68,7 +66,8 @@ public class Core {
 				File data = new File(dataFile);
 				data.delete();
 				FileWriter fw = new FileWriter(data);
-				fw.write(graph.writeCplexTrailer() + demands.writeCplexTrailer()
+				fw.write(graph.writeCplexTrailer()
+						+ demands.writeCplexTrailer()
 						+ graph.writeCplexFooter() + demands.writeCplexFooter());
 				fw.close();
 				// EXECUTE CPLEX
@@ -108,7 +107,7 @@ public class Core {
 					rowCounter++;
 				}
 				// Crea il file per il simulatore
-			//	writeDotFile(demands, u, allocation,iteration_counter);
+				writeDotFile(demands, u, allocation, iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();
@@ -130,14 +129,15 @@ public class Core {
 					Object obj[] = toObjectArray(time, d, u.get(i),
 							bit_rate[i], index);
 					if (d.isAllocated()) {
-//						// DEBUG
-//						System.err.println("Ci siamo");
-//						System.err.println("Src: " + d.getSender() + ", Dest: "
-//								+ d.getReceiver() + ", Min:  "
-//								+ d.getMin_bandwidth() + ", Start:  "
-//								+ d.getStartTime() + "  " + d.getEndTime()
-//								+ "  " + d.getWeight());
-//						//
+						// // DEBUG
+						// System.err.println("Ci siamo");
+						// System.err.println("Src: " + d.getSender() +
+						// ", Dest: "
+						// + d.getReceiver() + ", Min:  "
+						// + d.getMin_bandwidth() + ", Start:  "
+						// + d.getStartTime() + "  " + d.getEndTime()
+						// + "  " + d.getWeight());
+						// //
 						current.updateTransmissionEvent(obj);
 					} else {
 						storyline.addDemand(d);
@@ -206,13 +206,13 @@ public class Core {
 		int link = u.get(0).length;
 		for (int i = 0; i < link; ++i) {
 			boolean allocated = false;
-			String [] sd = graph.edge(i);
-			String support ="\t"+ sd[0]+" -> "+sd[1];
+			String[] sd = graph.edge(i);
+			String support = "\t" + sd[0] + " -> " + sd[1];
 			for (int j = 0; j < allocation.length; ++j) {
 				if (u.get(j)[i] > 0) {
-					if(!allocated){
-						allocated=true;
-						support+=" [comments=\" ";
+					if (!allocated) {
+						allocated = true;
+						support += " [comments=\" ";
 					}
 					support += "" + demands.getDemand(j).getReceiver() + ",";
 					allocated = true;
@@ -221,13 +221,13 @@ public class Core {
 			if (allocated) {
 				support = support.substring(0, support.length() - 1) + "\"]";
 			}
-				dot += support + ";\n";
+			dot += support + ";\n";
 		}
 		dot += "}\n";
-		File res=new File(dotFile+"_"+iteration_counter);
-		if(res.exists()){
+		File res = new File(dotFile + "_" + iteration_counter);
+		if (res.exists()) {
 			res.delete();
-		}else{
+		} else {
 			res.createNewFile();
 		}
 		FileWriter fw = new FileWriter(res);

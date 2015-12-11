@@ -131,6 +131,8 @@ public class Graph {
 		File adjListFile = new File(filename);
 		BufferedReader br = new BufferedReader(new FileReader(adjListFile));
 		String line = br.readLine();
+		line=line.trim();
+		line=line.replace(";", "");
 		n_vertex = Integer.parseInt(line);
 		int adjMatrix[][] = new int[n_vertex][];
 		for (int i = 0; i < n_vertex; ++i) {
@@ -140,6 +142,7 @@ public class Graph {
 
 		while ((line = br.readLine()) != null) {
 			line = line.trim();
+			if(line.equalsIgnoreCase(""))continue;
 			StringTokenizer st = new StringTokenizer(line, ";");
 			int current_vertex = Integer.parseInt(st.nextToken());
 			while (st.hasMoreTokens()) {
