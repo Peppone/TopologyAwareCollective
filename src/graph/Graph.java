@@ -53,23 +53,16 @@ public class Graph {
 		sender_edge = new ArrayList<Integer>();
 		receiver_edge = new ArrayList<Integer>();
 		/*
-		for (int i = 0; i < avertex[0].length; ++i) {
-			int se = findEndNodeEdge(i, avertex);
-			if (se > -1) {
-				sender_edge.add(se);
-			}
-		}
-		for (int i = 0; i < bvertex[0].length; ++i) {
-			int se = findEndNodeEdge(i, bvertex);
-			if (se > -1) {
-				receiver_edge.add(se);
-			}
-		}
-		
-		for (int i = 0; i < edge.length; ++i) {
-
-		}
-		*/
+		 * for (int i = 0; i < avertex[0].length; ++i) { int se =
+		 * findEndNodeEdge(i, avertex); if (se > -1) { sender_edge.add(se); } }
+		 * for (int i = 0; i < bvertex[0].length; ++i) { int se =
+		 * findEndNodeEdge(i, bvertex); if (se > -1) { receiver_edge.add(se); }
+		 * }
+		 * 
+		 * for (int i = 0; i < edge.length; ++i) {
+		 * 
+		 * }
+		 */
 	}
 
 	private String writeMatrix(String name, int mat[][]) {
@@ -130,31 +123,136 @@ public class Graph {
 	private void readAdjListFromFile(String filename) throws IOException {
 		File adjListFile = new File(filename);
 		BufferedReader br = new BufferedReader(new FileReader(adjListFile));
-		String line = br.readLine();
-		line=line.trim();
-		line=line.replace(";", "");
+		int line_counter = 1;
+		String line;
+		boolean isAdj = false;
+		boolean isDot = false;
+		while ((line = br.readLine().trim()).equalsIgnoreCase("")) {
+			line_counter++;
+		}
+		line = line.replace(";", "");
 		n_vertex = Integer.parseInt(line);
+		line_counter++;
 		int adjMatrix[][] = new int[n_vertex][];
 		for (int i = 0; i < n_vertex; ++i) {
 			adjMatrix[i] = new int[n_vertex];
 		}
 		pairs = new ArrayList<String[]>();
-
 		while ((line = br.readLine()) != null) {
 			line = line.trim();
-			if(line.equalsIgnoreCase(""))continue;
-			StringTokenizer st = new StringTokenizer(line, ";");
-			int current_vertex = Integer.parseInt(st.nextToken());
-			while (st.hasMoreTokens()) {
-				String vert = st.nextToken();
-				StringTokenizer single = new StringTokenizer(vert, ", \\s++");
-				int dest = Integer.parseInt(single.nextToken());
-				adjMatrix[current_vertex - 1][dest - 1] = Integer
-						.parseInt(single.nextToken());
-				n_edge++;
+			if (line.equalsIgnoreCase("")) {
+				line_counter++;
+				continue;
+			}
+			// StringTokenizer st = new StringTokenizer(line, "[->][<->]",true);
+			ArrayList<String> st = MyTokenizer.tokenize(line);
+
+			// int numTokens = st.countTokens();
+			int numTokens = st.size();
+			String lastToken = st.get(st.size() - 1);
+			if (numTokens < 3) {
+				System.err.println("Error occurred in line " + line_counter);
+				return;
+			}
+			if (lastToken.contains("->")) {
+				System.err.println("Missing some numbers" + line_counter);
+				return;
+			}
+			String source = st.remove(0);
+			String operator = null;
+			String destination = null;
+			String next = null;
+
+			int capacitySize = 0;
+
+			while (!st.isEmpty()) {
+				if (next == null) {
+					operator = st.remove(0);
+				} else {
+					operator = next;
+				}
+				destination = st.remove(0);
+				if (!st.isEmpty()) {
+					next = st.remove(0);
+				} else {
+					next = null;
+				}
+				if (operator.equalsIgnoreCase(";")) {
+					isAdj = true;
+					if (isDot) {
+						System.err.println("Mixed notation");
+						return;
+					}
+					capacitySize = Integer.parseInt(next);
+					int src = Integer.parseInt(source);
+					int dest = Integer.parseInt(destination);
+					if (adjMatrix[src - 1][dest - 1] == 0) {
+						adjMatrix[src - 1][dest - 1] = capacitySize;
+						n_edge++;
+					}
+					if (!st.isEmpty()) {
+						next = st.remove(0);
+					}
+
+				} else {
+					isDot = true;
+					if (isAdj) {
+						System.err.println("Mixed notation");
+						return;
+					}
+					if (operator.equalsIgnoreCase("->")) {
+						if (next == null || next.equalsIgnoreCase("->")
+								|| next.equalsIgnoreCase("<->")) {
+							capacitySize = 100;
+						} else {
+							capacitySize = Integer.parseInt(next);
+							next = null;
+						}
+						int src = Integer.parseInt(source);
+						int dest = Integer.parseInt(destination);
+						if (adjMatrix[src - 1][dest - 1] == 0) {
+							adjMatrix[src - 1][dest - 1] = capacitySize;
+							n_edge++;
+						}
+
+					} else if (operator.equalsIgnoreCase("<->")) {
+						if (next == null || next.equalsIgnoreCase("->")
+								|| next.equalsIgnoreCase("<->")) {
+							capacitySize = 100;
+
+						} else {
+							capacitySize = Integer.parseInt(next);
+							next = null;
+						}
+						int src = Integer.parseInt(source);
+						int dest = Integer.parseInt(destination);
+						if (adjMatrix[src - 1][dest - 1] == 0) {
+							adjMatrix[src - 1][dest - 1] = capacitySize;
+							n_edge++;
+						}
+						if (adjMatrix[dest - 1][src - 1] == 0) {
+							adjMatrix[dest - 1][src - 1] = capacitySize;
+							n_edge++;
+						}
+					} else {
+						System.err.println("Bad token in line " + line_counter);
+						return;
+					}
+					source = destination;
+				}
 
 			}
-
+			/*
+			 * while (st.hasMoreTokens()) { destination = st.nextToken();
+			 * destination = destination.trim(); String[] tokens = null; if
+			 * (source != null) { tokens = destination.split("[\\s+]"); if
+			 * (tokens.length == 1) { capacitySize = 100; } else { capacitySize
+			 * = Integer.parseInt(tokens[1]); } int src =
+			 * Integer.parseInt(source); int dest = Integer.parseInt(tokens[0]);
+			 * if (adjMatrix[src - 1][dest - 1] == 0) { adjMatrix[src - 1][dest
+			 * - 1] = capacitySize; n_edge++; } destination = tokens[0]; }
+			 * source = destination; }
+			 */
 		}
 
 		avertex = new int[n_edge][n_vertex];
@@ -298,7 +396,7 @@ public class Graph {
 	}
 
 	public HashMap<Integer, Integer> modifiedBfsVisit(int root,
-			HashSet<Integer> possibleReceiver,HashSet<Integer> receiving) {
+			HashSet<Integer> possibleReceiver, HashSet<Integer> receiving) {
 		/**
 		 * value = distance
 		 */
@@ -310,15 +408,15 @@ public class Graph {
 		while (!node.isEmpty()) {
 			int current_node = node.remove(0);
 			for (int i = 0; i < avertex.length; ++i) {
-				if (avertex[i][current_node-1] == 1) {
+				if (avertex[i][current_node - 1] == 1) {
 					for (int j = 0; j < avertex[i].length; ++j) {
 						if (bvertex[i][j] == 1) {
-							if (!map.containsKey(j+1)) {
-								distance=(map.get(current_node)+1);
-								if(!possibleReceiver.contains(j+1)){
-								node.add(j+1);
+							if (!map.containsKey(j + 1)) {
+								distance = (map.get(current_node) + 1);
+								if (!possibleReceiver.contains(j + 1)) {
+									node.add(j + 1);
 								}
-								map.put(j+1,distance);
+								map.put(j + 1, distance);
 							}
 							break;
 						}
@@ -344,15 +442,14 @@ public class Graph {
 		value[2] = 0;
 		map.put(root, value);
 		// ArrayList <Integer> node = new ArrayList<Integer>();
-		map = modifiedVisitRecursive(root, Integer.MAX_VALUE,
-				map, 0);
+		map = modifiedVisitRecursive(root, Integer.MAX_VALUE, map, 0);
 		value[0] = -1;
 		map.put(root, value);
 		return map;
 	}
 
-	private HashMap<Integer, Integer[]> modifiedVisitRecursive(int root, int max_bw,
-			HashMap<Integer, Integer[]> map, int depth) {
+	private HashMap<Integer, Integer[]> modifiedVisitRecursive(int root,
+			int max_bw, HashMap<Integer, Integer[]> map, int depth) {
 		// Cerca figli validi
 		ArrayList<Integer> children = searchValidNodes(root, max_bw, map,
 				depth + 1);
@@ -361,8 +458,7 @@ public class Graph {
 			return map;
 		// Ricorsione sui figli
 		for (Integer i : children) {
-			map = modifiedVisitRecursive(i, map.get(i)[0], map,
-					depth + 1);
+			map = modifiedVisitRecursive(i, map.get(i)[0], map, depth + 1);
 		}
 
 		return map;
@@ -413,18 +509,23 @@ public class Graph {
 		return n_edge;
 	}
 
+	public int getVertexNumber() {
+		return n_vertex;
+	}
+
 	public String[] edge(int edge) {
 		return pairs.get(edge);
 	}
-	public void addVertexEdges(int vertex){
+
+	public void addVertexEdges(int vertex) {
 		for (int i = 0; i < n_edge; ++i) {
-			if (avertex[i][vertex-1] == 1) {
-				if(!sender_edge.contains(i+1))
-					sender_edge.add(i+1);
+			if (avertex[i][vertex - 1] == 1) {
+				if (!sender_edge.contains(i + 1))
+					sender_edge.add(i + 1);
 			}
-			if (bvertex[i][vertex-1] == 1) {
-				if(!receiver_edge.contains(i+1))
-				receiver_edge.add(i+1);
+			if (bvertex[i][vertex - 1] == 1) {
+				if (!receiver_edge.contains(i + 1))
+					receiver_edge.add(i + 1);
 			}
 		}
 	}

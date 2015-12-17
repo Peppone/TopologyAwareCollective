@@ -79,21 +79,6 @@ public class Demand {
 		t_end = end;
 	}
 
-	// public int getS_edge() {
-	// return s_edge;
-	// }
-	//
-	// public void setS_edge(int s_edge) {
-	// this.s_edge = s_edge;
-	// }
-	//
-	// public int getR_edge() {
-	// return r_edge;
-	// }
-	//
-	// public void setR_edge(int r_edge) {
-	// this.r_edge = r_edge;
-	// }
 
 	public int getMax_bandwidth() {
 		return max_bandwidth;

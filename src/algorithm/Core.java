@@ -27,6 +27,8 @@ public class Core {
 	private String dotFile;
 	private DemandList storyline;
 	private Graph graph;
+	
+	private boolean vertex[];
 
 	public Core(String resultFile, String dataFile, String dotFile,
 			Graph graph, Collective... collective) throws IOException {
@@ -45,6 +47,8 @@ public class Core {
 		this.dotFile = dotFile;
 		u = null;
 		time = 0;
+		
+		vertex=new boolean[graph.getVertexNumber()];
 	}
 
 	public DemandList execute() throws IOException, InterruptedException {
@@ -129,15 +133,6 @@ public class Core {
 					Object obj[] = toObjectArray(time, d, u.get(i),
 							bit_rate[i], index);
 					if (d.isAllocated()) {
-						// // DEBUG
-						// System.err.println("Ci siamo");
-						// System.err.println("Src: " + d.getSender() +
-						// ", Dest: "
-						// + d.getReceiver() + ", Min:  "
-						// + d.getMin_bandwidth() + ", Start:  "
-						// + d.getStartTime() + "  " + d.getEndTime()
-						// + "  " + d.getWeight());
-						// //
 						current.updateTransmissionEvent(obj);
 					} else {
 						storyline.addDemand(d);
@@ -204,6 +199,22 @@ public class Core {
 			int[] allocation, int iteration_counter) throws IOException {
 		String dot = "digraph mygraph {\n";
 		int link = u.get(0).length;
+		for(int i =0;i<vertex.length;++i){
+			if(vertex[i]){
+				dot+="\t"+(i+1)+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+			}
+		}
+		for(int i =0; i< demands.getN_demand();++i){
+			if(allocation[i]>0){
+				Demand demand = demands.getDemand(i);
+				dot+="\t"+demand.getSender()+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+				vertex[demand.getSender()-1]=true;
+				dot+="\t"+demand.getReceiver()+"[style=\"filled\", color=\"red\", fillcolor=\"green\"];\n";
+				vertex[demand.getReceiver()-1]=true;
+			}
+
+		}
+
 		for (int i = 0; i < link; ++i) {
 			boolean allocated = false;
 			String[] sd = graph.edge(i);
@@ -219,7 +230,7 @@ public class Core {
 				}
 			}
 			if (allocated) {
-				support = support.substring(0, support.length() - 1) + "\"]";
+				support = support.substring(0, support.length() - 1) + "\", color = \"red\"]";
 			}
 			dot += support + ";\n";
 		}
