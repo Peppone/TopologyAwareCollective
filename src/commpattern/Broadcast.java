@@ -1,12 +1,15 @@
 package commpattern;
 
+import graph.Graph;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import graph.Graph;
 import model.SimpleModel;
 import model.TransmissionModel;
+import partitioner.DistanceBasedPartitioner;
+import partitioner.Partition;
 import demand.Demand;
 import demand.DemandList;
 
@@ -20,6 +23,7 @@ public class Broadcast implements Collective {
 	private boolean receiving[];
 	private DemandList activeDemands;
 	private TransmissionModel trxModel;
+	private ArrayList<Partition> partition;
 	/**
 	 * old favourite_transmitter: 0 - availability 1 - sender 2 - hop number
 	 * 
@@ -73,6 +77,8 @@ public class Broadcast implements Collective {
 			// favourite_transmitter[i][1] = -1;
 			// }
 			this.graph.addVertexEdges(receiver[i]);
+			partition=new ArrayList<Partition>();
+			partition.add(new Partition(this.graph));
 		}
 	}
 
@@ -350,7 +356,13 @@ public class Broadcast implements Collective {
 		} else {
 			owner.remove(newOwner);
 		}
-
+		//DEBUG
+		System.out.println("Current vertex = "+newOwner);
+		Partition p = partition.get(0);
+		DistanceBasedPartitioner dbp = new DistanceBasedPartitioner(graph);
+		dbp.partition(p, newOwner);
+		
+		
 	}
 
 	public void setReceivingFromReceiver(int receiver, boolean b) {

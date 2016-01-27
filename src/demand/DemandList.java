@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import commpattern.Broadcast;
-import commpattern.Collective;
 
 public class DemandList {
 	// DIREI DI TOGLIERE N_sender, N_receiver, N-Demand
