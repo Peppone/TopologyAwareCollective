@@ -1,8 +1,10 @@
 package partitioner;
 
+import java.util.ArrayList;
+
 public class PartitionLeaf implements PartitionTreeElement {
-	Partition leaf;
-	PartitionNode parent;
+	private Partition leaf;
+	private PartitionNode parent;
 
 	PartitionLeaf(Partition partition, PartitionNode parent){
 		leaf = partition;
@@ -46,5 +48,13 @@ public class PartitionLeaf implements PartitionTreeElement {
 	public void setParent(PartitionNode parent) {
 		this.parent = parent;
 	}
+
+	@Override
+	public ArrayList<Partition> retriveLeafPartitions() {
+		ArrayList<Partition> result =new ArrayList<Partition>();
+		result.add(leaf);
+		return result;
+	}
+	
 
 }

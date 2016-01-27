@@ -10,6 +10,7 @@ import model.SimpleModel;
 import model.TransmissionModel;
 import partitioner.DistanceBasedPartitioner;
 import partitioner.Partition;
+import partitioner.PartitionTree;
 import demand.Demand;
 import demand.DemandList;
 
@@ -23,7 +24,7 @@ public class Broadcast implements Collective {
 	private boolean receiving[];
 	private DemandList activeDemands;
 	private TransmissionModel trxModel;
-	private ArrayList<Partition> partition;
+	private PartitionTree partitionTree;
 	/**
 	 * old favourite_transmitter: 0 - availability 1 - sender 2 - hop number
 	 * 
@@ -77,8 +78,9 @@ public class Broadcast implements Collective {
 			// favourite_transmitter[i][1] = -1;
 			// }
 			this.graph.addVertexEdges(receiver[i]);
-			partition=new ArrayList<Partition>();
-			partition.add(new Partition(this.graph));
+			
+			//INIT Partition Tree
+			partitionTree=new PartitionTree(this.graph);
 		}
 	}
 
@@ -358,7 +360,7 @@ public class Broadcast implements Collective {
 		}
 		//DEBUG
 		System.out.println("Current vertex = "+newOwner);
-		Partition p = partition.get(0);
+		Partition p = partitionTree.getPartition(1);
 		DistanceBasedPartitioner dbp = new DistanceBasedPartitioner(graph);
 		dbp.partition(p, newOwner);
 		
