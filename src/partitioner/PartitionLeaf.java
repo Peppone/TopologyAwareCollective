@@ -6,15 +6,15 @@ public class PartitionLeaf implements PartitionTreeElement {
 	private Partition leaf;
 	private PartitionNode parent;
 
-	PartitionLeaf(Partition partition, PartitionNode parent){
+	PartitionLeaf(Partition partition, PartitionNode parent) {
 		leaf = partition;
 		this.parent = parent;
 	}
-	
-	PartitionLeaf(){
-		this(null,null);
+
+	PartitionLeaf() {
+		this(null, null);
 	}
-	
+
 	public boolean containsElement(Integer el) {
 		return leaf.contains(el);
 	}
@@ -51,10 +51,30 @@ public class PartitionLeaf implements PartitionTreeElement {
 
 	@Override
 	public ArrayList<Partition> retriveLeafPartitions() {
-		ArrayList<Partition> result =new ArrayList<Partition>();
+		ArrayList<Partition> result = new ArrayList<Partition>();
 		result.add(leaf);
 		return result;
 	}
-	
+
+	public void bipartite(Partition[] partitions) {
+		if (partitions.length > 2 || partitions.length == 1)
+			return;
+		PartitionNode oldParent = parent;
+		PartitionNode newParent = new PartitionNode();
+		if (oldParent != null) {
+
+			newParent.setParent(oldParent);
+			if (this == oldParent.left) {
+				oldParent.left = newParent;
+			} else {
+				oldParent.right = newParent;
+			}
+		}
+		this.parent = newParent;
+		this.leaf = partitions[1];
+		newParent.setRight(this);
+		newParent.setLeft(new PartitionLeaf(partitions[0], newParent));
+
+	}
 
 }

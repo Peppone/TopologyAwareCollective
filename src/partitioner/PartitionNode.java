@@ -55,5 +55,17 @@ public class PartitionNode implements PartitionTreeElement {
 	public PartitionTreeElement getRight() {
 		return right;
 	}
+
+	public void setLeft(PartitionTreeElement left) {
+		this.left = left;
+	}
+
+	public void setRight(PartitionTreeElement right) {
+		this.right = right;
+	}
+
+	public void setParent(PartitionNode parent) {
+		this.parent = parent;
+	}
 	
 }

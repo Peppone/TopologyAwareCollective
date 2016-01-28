@@ -7,11 +7,12 @@ import java.util.Collection;
 import java.util.Iterator;
 
 public class PartitionTree {
-	private PartitionTreeElement root;
+	private PartitionRoot root;
 
 	public PartitionTree(Graph graph) {
 		Partition p = new Partition(graph);
-		root = new PartitionLeaf(p,null);
+		root = new PartitionRoot();
+		root.setLeft(new PartitionLeaf(p,root));
 	}
 
 	boolean containsElement(Integer el) {
@@ -78,5 +79,9 @@ public class PartitionTree {
 			}
 			return solutions;
 		}
+	}
+	
+	public PartitionLeaf getPartitionLeaf(Integer vertex){
+		return root.getPartitionLeaf(vertex);
 	}
 }

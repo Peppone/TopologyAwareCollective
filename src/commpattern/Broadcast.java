@@ -10,6 +10,7 @@ import model.SimpleModel;
 import model.TransmissionModel;
 import partitioner.DistanceBasedPartitioner;
 import partitioner.Partition;
+import partitioner.PartitionLeaf;
 import partitioner.PartitionTree;
 import demand.Demand;
 import demand.DemandList;
@@ -78,9 +79,9 @@ public class Broadcast implements Collective {
 			// favourite_transmitter[i][1] = -1;
 			// }
 			this.graph.addVertexEdges(receiver[i]);
-			
-			//INIT Partition Tree
-			partitionTree=new PartitionTree(this.graph);
+
+			// INIT Partition Tree
+			partitionTree = new PartitionTree(this.graph);
 		}
 	}
 
@@ -358,13 +359,18 @@ public class Broadcast implements Collective {
 		} else {
 			owner.remove(newOwner);
 		}
-		//DEBUG
-		System.out.println("Current vertex = "+newOwner);
-		Partition p = partitionTree.getPartition(1);
-		DistanceBasedPartitioner dbp = new DistanceBasedPartitioner(graph);
-		dbp.partition(p, newOwner);
-		
-		
+		// DEBUG
+		System.out.println("Current vertex = " + (newOwner-1));
+		PartitionLeaf pl = partitionTree.getPartitionLeaf(newOwner-1);
+		if (pl == null) {
+			System.err.println(newOwner-1 + " does not exist");
+		} else {
+			DistanceBasedPartitioner dbp = new DistanceBasedPartitioner(graph);
+			Partition vect[] = dbp.partition(pl.getLeaf(), newOwner-1);
+			pl.bipartite(vect);
+		}
+		// DEBUG
+
 	}
 
 	public void setReceivingFromReceiver(int receiver, boolean b) {

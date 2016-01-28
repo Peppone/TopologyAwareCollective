@@ -397,7 +397,7 @@ public class Graph {
 
 	public HashMap<Integer, Integer> modifiedBfsVisit(int root,
 			HashSet<Integer> possibleReceiver, HashSet<Integer> receiving) {
-		/**
+		/*
 		 * value = distance
 		 */
 		ArrayList<Integer> node = new ArrayList<Integer>();
