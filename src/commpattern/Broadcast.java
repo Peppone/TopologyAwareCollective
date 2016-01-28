@@ -1,10 +1,16 @@
 package commpattern;
 
-import java.util.HashMap;
-
 import graph.Graph;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import model.SimpleModel;
 import model.TransmissionModel;
+import partitioner.DistanceBasedPartitioner;
+import partitioner.Partition;
+import partitioner.PartitionTree;
 import demand.Demand;
 import demand.DemandList;
 
@@ -13,11 +19,19 @@ public class Broadcast implements Collective {
 	private int[] receiver;
 	private int max_bitrate[];
 	private int min_bitrate[];
-	private boolean owner[];
+	// private boolean owner[];
+	private HashMap<Integer, HashSet<Integer>> owner;
 	private boolean receiving[];
 	private DemandList activeDemands;
 	private TransmissionModel trxModel;
-	private int[][] favourite_transmitter;
+	private PartitionTree partitionTree;
+	/**
+	 * old favourite_transmitter: 0 - availability 1 - sender 2 - hop number
+	 * 
+	 * new favourite_transmitter: 0 - hop number 1 - sender
+	 */
+	// private int[][] favourite_transmitter;
+	private HashMap<Integer, Integer[]> favourite_transmitter;
 	private Graph graph;
 
 	public Broadcast(int sender, int receiver[], int max_bitrate[], Graph graph) {
@@ -33,31 +47,50 @@ public class Broadcast implements Collective {
 			this.min_bitrate = new int[receiver.length];
 		}
 		this.max_bitrate = max_bitrate;
-		owner = new boolean[receiver.length];
+		// owner = new boolean[receiver.length];
+
+		owner = new HashMap<Integer, HashSet<Integer>>();
+		HashSet<Integer> hs = new HashSet<Integer>();
+		owner.put(sender, hs);
 		activeDemands = new DemandList();
 		this.receiving = new boolean[receiver.length];
 		trxModel = new SimpleModel(100);
 		this.graph = graph;
-		this.favourite_transmitter = new int[receiver.length][4];
-		HashMap<Integer, Integer[]> visit = graph.modifiedVisit(sender);
+		this.graph.addVertexEdges(sender);
+		// this.favourite_transmitter = new int[receiver.length][2];
+		// HashMap<Integer, Integer[]> visit = graph.modi
+		// counter++;fiedVisit(sender);
+		this.favourite_transmitter = new HashMap<Integer, Integer[]>(
+				receiver.length);
+		HashMap<Integer, Integer> visit = graph.modifiedBfsVisit(sender,
+				getPossibleReceiver(), toHashSet(receiver, receiving));
 		for (int i = 0; i < receiver.length; ++i) {
-			Integer[] current = visit.get(receiver[i]);
-			// favourite_transmitter[i][0]=bfs[receiver[i]-1];
-			favourite_transmitter[i][0] = current[0];
-			favourite_transmitter[i][1] = sender;
-			favourite_transmitter[i][2] = current[2];
+			Integer distance = visit.get(receiver[i]);
+			if (distance != null) {
+				Integer value[] = new Integer[2];
+				value[0] = distance;
+				value[1] = sender;
+				hs.add(receiver[i]);
+				favourite_transmitter.put(receiver[i], value);
+			}
+			// else{
+			// favourite_transmitter[i][0] = -1;
+			// favourite_transmitter[i][1] = -1;
+			// }
+			this.graph.addVertexEdges(receiver[i]);
+			
+			//INIT Partition Tree
+			partitionTree=new PartitionTree(this.graph);
 		}
 	}
 
 	public String generateDemandToString() {
 		String demand = "";
-		for (int i = 0; i < receiver.length; ++i) {
-			demand += sender + " " + getReceiverFromReceiving(i) + " "
-					+ max_bitrate[i] + " " + min_bitrate[i];
-		}
-		for (int i = 0; i < owner.length; ++i) {
-			if (!owner[i])
-				continue;
+		// for (int i = 0; i < receiver.length; ++i) {
+		// demand += sender + " " + getReceiverFromReceiving(i) + " "
+		// + max_bitrate[i] + " " + min_bitrate[i];
+		// }
+		for (Integer i : owner.keySet()) {
 			for (int j = 0; j < receiving.length; ++j) {
 				if (receiving[j])
 					continue;
@@ -72,32 +105,80 @@ public class Broadcast implements Collective {
 		Demand demand;
 		DemandList dl = new DemandList();
 		dl = DemandList.mergeAllocated(dl, activeDemands);
-		for (int i = 0; i < receiver.length; ++i) {
-			if (receiving[i])
-				continue;
-			demand = new Demand(sender, receiver[i], min_bitrate[i],
-					max_bitrate[i], false, 0, 0, 1, this);
-			if(favourite_transmitter[i][1]==sender){
-				demand.setWeight(100 *favourite_transmitter[i][2]);
+		if (owner.containsKey(sender)) {
+			for (int i = 0; i < receiver.length; ++i) {
+				if (receiving[i]
+						|| !favourite_transmitter.containsKey(receiver[i]))
+					continue;
+				demand = new Demand(sender, receiver[i], min_bitrate[i],
+						max_bitrate[i], false, 0, 0, 1, this);
+				// if (favourite_transmitter[i][1] == sender) {
+
+				if (favourite_transmitter.get(receiver[i])[1] == sender) {
+					demand.setWeight(100 * favourite_transmitter
+							.get(receiver[i])[0]);
+				}
+				dl.addDemand(demand);
 			}
-			dl.addDemand(demand);
 		}
-		for (int i = 0; i < owner.length; ++i) {
-			if (!owner[i])
+		for (int i = 0; i < receiver.length; ++i) {
+			if (!owner.containsKey(receiver[i]))
 				continue;
 			for (int j = 0; j < receiver.length; ++j) {
-				if (receiving[j])
+				if (receiving[j]
+						|| !favourite_transmitter.containsKey(receiver[j]))
 					continue;
+
 				demand = new Demand(receiver[i], receiver[j], max_bitrate[i],
 						this);
-				if(favourite_transmitter[j][1]==receiver[i]){
-					demand.setWeight(100 *favourite_transmitter[j][2]);
+				// if (favourite_transmitter[j][1] == receiver[i]) {
+				if (favourite_transmitter.get(receiver[j])[1] == receiver[i]) {
+					// demand.setWeight(100 * favourite_transmitter[j][0]);
+					demand.setWeight(100 * favourite_transmitter
+							.get(receiver[j])[0]);
 				}
 				dl.addDemand(demand);
 			}
 		}
 		activeDemands = dl;
+		// //DEBUG
+		// System.out.println("bw tx hop w ");
+		// for(int[] i : favourite_transmitter){
+		// for(int j:i){
+		// System.out.print(j+" ");
+		// }
+		// System.out.println();
+		// }
+		// System.out.println();
+		// //
 		return dl;
+	}
+
+	public HashSet<Integer> toHashSet(int array[], boolean vec[]) {
+		HashSet<Integer> res = new HashSet<Integer>();
+		for (int i = 0; i < array.length; ++i) {
+			if (vec[i]) {
+				res.add(array[i]);
+			}
+		}
+		return res;
+
+	}
+
+	public int getSender() {
+		return sender;
+	}
+
+	public void setSender(int sender) {
+		this.sender = sender;
+	}
+
+	public int[] getReceiver() {
+		return receiver;
+	}
+
+	public void setReceiver(int[] receiver) {
+		this.receiver = receiver;
 	}
 
 	public int getMinBitrate(int index) {
@@ -108,13 +189,14 @@ public class Broadcast implements Collective {
 		return max_bitrate[index];
 	}
 
-	public void setOwner(int index, boolean own) {
-		owner[index] = own;
-	}
-
-	public boolean getOwner(int index) {
-		return owner[index];
-	}
+	//
+	// public void setOwner(int index, boolean own) {
+	// owner[index] = own;
+	// }
+	//
+	// public boolean getOwner(int index) {
+	// return owner[index];
+	// }
 
 	@Override
 	public void startTransmissionEvent(Object[] obj) {
@@ -134,21 +216,33 @@ public class Broadcast implements Collective {
 		allocatedDemand.setStartTime(now);
 		allocatedDemand.setEndTime(trxModel.computeTotalTransmissionTime(now,
 				bit_rate, arr));
+		allocatedDemand.setMin_bandwidth(bit_rate);
 		setReceivingFromReceiver(allocatedDemand.getReceiver(), true);
 		allocatedDemand.setAllocated(true);
-		//activeDemands.addDemand(allocatedDemand);
+		// activeDemands.addDemand(allocatedDemand);
 		return;
 
 	}
 
+	public HashSet<Integer> getPossibleReceiver() {
+		HashSet<Integer> res = new HashSet<Integer>();
+		for (int i = 0; i < receiving.length; ++i) {
+			if (!receiving[i] || !owner.containsKey(receiver[i]))
+				res.add(receiver[i]);
+		}
+		return res;
+	}
+
 	@Override
 	public void updateTransmissionEvent(Object[] obj) {
+		// TODO Copiare su ModifiedDemand la vecchia banda
 		double now = (Double) obj[0];
 		Demand modifiedDemand = (Demand) obj[1];
-		boolean check = removeFromList(modifiedDemand.getSender(),
+		Demand old = removeFromList(modifiedDemand.getSender(),
 				modifiedDemand.getReceiver());
-		assert (check);
+		// assert (check);
 		modifiedDemand.setAllocated(true);
+		modifiedDemand.setMin_bandwidth(old.getMin_bandwidth());
 		Integer[] link = (Integer[]) obj[2];
 		int new_bit_rate = (Integer) obj[3];
 		int destination = modifiedDemand.getReceiver();
@@ -160,8 +254,8 @@ public class Broadcast implements Collective {
 		}
 		Object arr[] = new Object[1];
 		arr[0] = hopCounter;
-		trxModel.computeRemainingTransmissionTime(
-				now,new_bit_rate, modifiedDemand, arr);
+		trxModel.computeRemainingTransmissionTime(now, new_bit_rate,
+				modifiedDemand, arr);
 		activeDemands.addDemand(modifiedDemand);
 		return;
 
@@ -170,20 +264,41 @@ public class Broadcast implements Collective {
 	@Override
 	public void endTransmissionEvent(Object[] obj) {
 		Demand d = (Demand) obj[0];
-		setOwnerFromReceiver(d.getReceiver(), true);
+		// setOwnerFromReceiver(d.getReceiver(), true);
+		HashSet<Integer> hs = new HashSet<Integer>();
+		removeReceiverFromHashSet(d.getReceiver());
+		owner.put(d.getReceiver(), hs);
 		updateFavouriteTransmitter(d.getReceiver());
-		assert (activeDemands.remove(d));
+		activeDemands.remove(d);
+		// assert ();
 		return;
+
+	}
+
+	private void removeReceiverFromHashSet(int receiver) {
+		ArrayList<Integer> toRemove = new ArrayList<Integer>();
+		for (Integer i : owner.keySet()) {
+			HashSet<Integer> hs = owner.get(i);
+			if (hs.contains(receiver)) {
+				hs.remove(receiver);
+			}
+			if (hs.size() == 0) {
+				toRemove.add(i);
+			}
+		}
+		for (Integer i : toRemove)
+			owner.remove(i);
 
 	}
 
 	@Override
 	public boolean isEnd() {
-		for (int i = 0; i < owner.length; ++i) {
-			if (!owner[i])
-				return false;
-		}
-		return true;
+		// for (int i = 0; i < owner.length; ++i) {
+		// if (!owner[i])
+		// return false;
+		// }
+		// return true;
+		return owner.size() == 0;
 	}
 
 	@Override
@@ -191,30 +306,65 @@ public class Broadcast implements Collective {
 		return activeDemands.getN_demand();
 	}
 
-	public void setOwnerFromReceiver(int receiver, boolean b) {
-		for (int i = 0; i < this.receiver.length; i++)
-			if (this.receiver[i] == receiver) {
-				this.owner[i] = b;
-				updateFavouriteTransmitter(this.receiver[i]);
-				return;
-			}
-	}
+	// public void setOwnerFromReceiver(int receiver, boolean b) {
+	// for (int i = 0; i < this.receiver.length; i++)
+	// if (this.receiver[i] == receiver) {
+	// this.owner[i] = b;
+	// updateFavouriteTransmitter(this.receiver[i]);
+	// return;
+	// }
+	// }
 
 	private void updateFavouriteTransmitter(int newOwner) {
-		HashMap<Integer, Integer[]> visit = graph.modifiedVisit(newOwner);
-		for (int i=0;i<receiver.length;++i) {
-//			if (receiver[i] == newOwner)
-//				continue;
-			Integer array[] = visit.get(receiver[i]);
-			if (favourite_transmitter[i][0] > array[0]
-					|| (favourite_transmitter[i][0] == array[0] && favourite_transmitter[i][2] > array[2])) {
-				favourite_transmitter[i][0] = array[0];
-				favourite_transmitter[i][1] = newOwner;
-				favourite_transmitter[i][2] = array[2];
-			} else
-				continue;
-		}
+		// HashMap<Integer, Integer[]> visit = graph.modifiedVisit(newOwner);
+		HashMap<Integer, Integer> visit = graph.modifiedBfsVisit(newOwner,
+				getPossibleReceiver(), toHashSet(receiver, receiving));
 
+		// DA VERIFICARE SE BISOGNA FILTRARE I DESTINATARI "VECCHI" O MENO
+
+		HashSet<Integer> hs = new HashSet<Integer>();
+
+		for (int i = 0; i < receiver.length; ++i) {
+			// if (receiver[i] == newOwneri)
+			// continue;
+			Integer current = visit.get(receiver[i]);
+			if (current != null) {
+				/*
+				 * if (favourite_transmitter[i][0] > current) {
+				 * favourite_transmitter[i][0] = current;
+				 * favourite_transmitter[i][1] = newOwner;
+				 */
+				if (!receiving[i]) {
+					hs.add(receiver[i]);
+				}
+				Integer array[] = favourite_transmitter.get(receiver[i]);
+				if (array == null) {
+					array = new Integer[2];
+					array[0] = current;
+					array[1] = newOwner;
+					favourite_transmitter.put(receiver[i], array);
+				} else {
+					if (array[0] > current) {
+						array[0] = current;
+						array[1] = newOwner;
+						favourite_transmitter.put(receiver[i], array);
+					} else
+						continue;
+				}
+			}
+		}
+		if (hs.size() > 0) {
+			owner.put(newOwner, hs);
+		} else {
+			owner.remove(newOwner);
+		}
+		//DEBUG
+		System.out.println("Current vertex = "+newOwner);
+		Partition p = partitionTree.getPartition(1);
+		DistanceBasedPartitioner dbp = new DistanceBasedPartitioner(graph);
+		dbp.partition(p, newOwner);
+		
+		
 	}
 
 	public void setReceivingFromReceiver(int receiver, boolean b) {
@@ -225,6 +375,14 @@ public class Broadcast implements Collective {
 			}
 	}
 
+	public int getIndexFromReceiver(int receiver) {
+		for (int i = 0; i < this.receiver.length; i++)
+			if (this.receiver[i] == receiver) {
+				return i;
+			}
+		return -1;
+	}
+
 	public int getReceiverFromReceiving(int receiving) {
 		return receiver[receiving];
 	}
@@ -233,7 +391,7 @@ public class Broadcast implements Collective {
 		return receiver[owner];
 	}
 
-	public boolean removeFromList(int sender, int receiver) {
+	public Demand removeFromList(int sender, int receiver) {
 		Demand toRemove = null;
 		boolean wasFound = false;
 		for (Demand d : activeDemands.getDemands()) {
@@ -248,26 +406,20 @@ public class Broadcast implements Collective {
 		if (wasFound) {
 			activeDemands.remove(toRemove);
 		}
-		return wasFound;
+		return toRemove;
 	}
 
-
-
 	public void debug() {
-		for (int i = 0; i < favourite_transmitter.length; ++i) {
-			System.out.println(receiver[i] + " " + favourite_transmitter[i][0]
-					+ " " + favourite_transmitter[i][1]);
-		}
-		System.out.println();
-		for (int i = receiver.length - 1; i >= 0; --i) {
-			updateFavouriteTransmitter(receiver[i]);
-			for (int j = 0; j < favourite_transmitter.length; ++j) {
-				System.out.println(receiver[j] + " "
-						+ favourite_transmitter[j][0] + " "
-						+ favourite_transmitter[j][1]);
-			}
-			System.out.println();
-		}
+		/*
+		 * for (int i = 0; i < favourite_transmitter.length; ++i) {
+		 * System.out.println(receiver[i] + " " + favourite_transmitter[i][0] +
+		 * " " + favourite_transmitter[i][1]); } System.out.println(); for (int
+		 * i = receiver.length - 1; i >= 0; --i) {
+		 * updateFavouriteTransmitter(receiver[i]); for (int j = 0; j <
+		 * favourite_transmitter.length; ++j) { System.out.println(receiver[j] +
+		 * " " + favourite_transmitter[j][0] + " " +
+		 * favourite_transmitter[j][1]); } System.out.println(); }
+		 */
 	}
 
 }

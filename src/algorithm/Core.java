@@ -2,11 +2,9 @@ package algorithm;
 
 import graph.Graph;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -26,32 +24,43 @@ public class Core {
 	private int edge;
 	private String resultFile;
 	private String dataFile;
+	private String dotFile;
 	private DemandList storyline;
+	private Graph graph;
+	
+	private boolean vertex[];
 
-	public Core(int edge, String resultFile, String dataFile,
-			Collective... collective) throws IOException {
+	public Core(String resultFile, String dataFile, String dotFile,
+			Graph graph, Collective... collective) throws IOException {
 		/**
 		 * public Core(int edge, String demandfile, String resultFile,
 		 * Collective... collective) throws IOException
 		 */
 		collectives = new ArrayList<Collective>();
-		this.edge = edge;
 		for (Collective c : collective) {
 			collectives.add(c);
 		}
+		this.graph = graph;
+		this.edge = graph.getEdgeNumber();
 		this.dataFile = dataFile;
 		this.resultFile = resultFile;
+		this.dotFile = dotFile;
 		u = null;
 		time = 0;
+		
+		vertex=new boolean[graph.getVertexNumber()];
 	}
 
-	public DemandList execute(Graph g) throws IOException, InterruptedException {
+	public DemandList execute() throws IOException, InterruptedException {
 		// TODO: Migliorare la gestione dell'output file generato CPLEX. Fa
 		// troppo schifo a causa del formato delle variabili.
-		
-		storyline = new DemandList();
-		while (collectives.size() != 0) {
 
+		storyline = new DemandList();
+		int iteration_counter = 0;
+		while (collectives.size() != 0) {
+			// DEBUG
+			long start = System.nanoTime();
+			//
 			demands = new DemandList();
 			for (Collective c : collectives) {
 				demands.merge(c.generateDemands());
@@ -61,8 +70,9 @@ public class Core {
 				File data = new File(dataFile);
 				data.delete();
 				FileWriter fw = new FileWriter(data);
-				fw.write(g.writeCplexTrailer() + demands.writeCplexTrailer()
-						+ g.writeCplexFooter() + demands.writeCplexFooter());
+				fw.write(graph.writeCplexTrailer()
+						+ demands.writeCplexTrailer()
+						+ graph.writeCplexFooter() + demands.writeCplexFooter());
 				fw.close();
 				// EXECUTE CPLEX
 				String command = "/usr/local/bin/oplrun";
@@ -100,13 +110,15 @@ public class Core {
 					u.add(rowCounter, row);
 					rowCounter++;
 				}
+				// Crea il file per il simulatore
+				writeDotFile(demands, u, allocation, iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();
 				int collective = 0;
 				ArrayList<Demand> allDemands = demands.getDemands();
 				for (int i = 0; i < demands.getN_demand(); ++i) {
-					if (i > counter) {
+					if (i > counter - 1) {
 						collective++;
 						counter += collectives.get(collective)
 								.getDemandNumber();
@@ -120,11 +132,11 @@ public class Core {
 					int index = i - left;
 					Object obj[] = toObjectArray(time, d, u.get(i),
 							bit_rate[i], index);
-					;
 					if (d.isAllocated()) {
 						current.updateTransmissionEvent(obj);
 					} else {
 						storyline.addDemand(d);
+						assert ((Integer) obj[3] > 0);
 						current.startTransmissionEvent(obj);
 					}
 				}
@@ -141,6 +153,9 @@ public class Core {
 			if (toRemove.size() > 0) {
 				collectives.removeAll(toRemove);
 			}
+			System.out.println("finita iterazione in "
+					+ (System.nanoTime() - start) / 1E9);
+			iteration_counter++;
 		}
 		return storyline;
 	}
@@ -178,6 +193,59 @@ public class Core {
 			current.endTransmissionEvent(obj);
 		}
 		return minimumTime;
+	}
+
+	private String writeDotFile(DemandList demands, ArrayList<Integer[]> u,
+			int[] allocation, int iteration_counter) throws IOException {
+		String dot = "digraph mygraph {\n";
+		int link = u.get(0).length;
+		for(int i =0;i<vertex.length;++i){
+			if(vertex[i]){
+				dot+="\t"+(i+1)+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+			}
+		}
+		for(int i =0; i< demands.getN_demand();++i){
+			if(allocation[i]>0){
+				Demand demand = demands.getDemand(i);
+				dot+="\t"+demand.getSender()+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+				vertex[demand.getSender()-1]=true;
+				dot+="\t"+demand.getReceiver()+"[style=\"filled\", color=\"red\", fillcolor=\"green\"];\n";
+				vertex[demand.getReceiver()-1]=true;
+			}
+
+		}
+
+		for (int i = 0; i < link; ++i) {
+			boolean allocated = false;
+			String[] sd = graph.edge(i);
+			String support = "\t" + sd[0] + " -> " + sd[1];
+			for (int j = 0; j < allocation.length; ++j) {
+				if (u.get(j)[i] > 0) {
+					if (!allocated) {
+						allocated = true;
+						support += " [comments=\" ";
+					}
+					support += "" + demands.getDemand(j).getReceiver() + ",";
+					allocated = true;
+				}
+			}
+			if (allocated) {
+				support = support.substring(0, support.length() - 1) + "\", color = \"red\"]";
+			}
+			dot += support + ";\n";
+		}
+		dot += "}\n";
+		File res = new File(dotFile + "_" + iteration_counter);
+		if (res.exists()) {
+			res.delete();
+		} else {
+			res.createNewFile();
+		}
+		FileWriter fw = new FileWriter(res);
+		fw.append(dot);
+		fw.close();
+		return dot;
+
 	}
 
 }
