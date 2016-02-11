@@ -67,5 +67,10 @@ public class PartitionNode implements PartitionTreeElement {
 	public void setParent(PartitionNode parent) {
 		this.parent = parent;
 	}
+
+	public void printPartitions(){
+		left.printPartitions();
+		right.printPartitions();
+	}
 	
 }

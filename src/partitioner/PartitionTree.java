@@ -32,6 +32,9 @@ public class PartitionTree {
 		return root;
 	}
 	
+	public void printPartitions(){
+		root.printPartitions();
+	}
 
 	public ArrayList<Integer> findPossibleDestinations(Integer vertex,
 			Collection<Integer> receivers) {
@@ -51,13 +54,17 @@ public class PartitionTree {
 
 		else {
 			PartitionNode parent = leaf.getParent();
-			PartitionNode oldParent = parent;
+			PartitionNode oldParent;
 			PartitionTreeElement toInvestigate = null;
 			while (solutions.size() == 0) {
+				oldParent = parent;
 				parent = parent.getParent();
+				if (parent == null)
+					break;
 				if (oldParent == parent.getLeft()) {
 					toInvestigate = parent.getRight();
 				} else {
+					assert(parent.getRight() == oldParent);
 					toInvestigate = parent.getLeft();
 				}
 				ArrayList<Partition> leaves = toInvestigate
@@ -73,8 +80,6 @@ public class PartitionTree {
 				}
 				if (parent == null)
 					break;
-				else
-					oldParent = parent;
 
 			}
 			return solutions;

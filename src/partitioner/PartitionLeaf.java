@@ -56,8 +56,8 @@ public class PartitionLeaf implements PartitionTreeElement {
 		return result;
 	}
 
-	public void bipartite(Partition[] partitions) {
-		if (partitions.length > 2 || partitions.length == 1)
+	public void updateTree(Partition[] partitions) {
+		if (partitions.length !=2)
 			return;
 		PartitionNode oldParent = parent;
 		PartitionNode newParent = new PartitionNode();
@@ -65,9 +65,9 @@ public class PartitionLeaf implements PartitionTreeElement {
 
 			newParent.setParent(oldParent);
 			if (this == oldParent.left) {
-				oldParent.left = newParent;
+				oldParent.setLeft(newParent);
 			} else {
-				oldParent.right = newParent;
+				oldParent.setRight(newParent);
 			}
 		}
 		this.parent = newParent;
@@ -75,6 +75,13 @@ public class PartitionLeaf implements PartitionTreeElement {
 		newParent.setRight(this);
 		newParent.setLeft(new PartitionLeaf(partitions[0], newParent));
 
+	}
+
+	public void printPartitions(){
+		for(Integer i:leaf.getVertex()){
+			System.err.print(i+1+" ");
+		}
+		System.err.println();
 	}
 
 }

@@ -32,6 +32,16 @@ public class Partition {
 			vertex.add(i);
 		}
 	}
+	
+	
+
+	public HashSet<Integer> getVertex() {
+		return vertex;
+	}
+
+	public void setVertex(HashSet<Integer> vertex) {
+		this.vertex = vertex;
+	}
 
 	public Partition(Collection<Integer> vertex) {
 		this.vertex = new HashSet<Integer>(vertex.size());

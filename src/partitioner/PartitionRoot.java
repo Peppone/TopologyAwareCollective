@@ -43,8 +43,11 @@ public class PartitionRoot extends PartitionNode{
 	public void setRight(PartitionTreeElement pet){
 		setLeft(pet);
 	}
-	
-	
+
+	@Override
+	public void printPartitions(){
+		left.printPartitions();
+	}
 
 
 }

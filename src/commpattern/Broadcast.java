@@ -55,34 +55,9 @@ public class Broadcast implements Collective {
 		owner.put(sender, hs);
 		activeDemands = new DemandList();
 		this.receiving = new boolean[receiver.length];
-		trxModel = new SimpleModel(100);
+		trxModel = new SimpleModel(100,0.1);
 		this.graph = graph;
 		this.graph.addVertexEdges(sender);
-		// this.favourite_transmitter = new int[receiver.length][2];
-		// HashMap<Integer, Integer[]> visit = graph.modi
-		// counter++;fiedVisit(sender);
-		this.favourite_transmitter = new HashMap<Integer, Integer[]>(
-				receiver.length);
-		HashMap<Integer, Integer> visit = graph.modifiedBfsVisit(sender,
-				getPossibleReceiver(), toHashSet(receiver, receiving));
-		for (int i = 0; i < receiver.length; ++i) {
-			Integer distance = visit.get(receiver[i]);
-			if (distance != null) {
-				Integer value[] = new Integer[2];
-				value[0] = distance;
-				value[1] = sender;
-				hs.add(receiver[i]);
-				favourite_transmitter.put(receiver[i], value);
-			}
-			// else{
-			// favourite_transmitter[i][0] = -1;
-			// favourite_transmitter[i][1] = -1;
-			// }
-			this.graph.addVertexEdges(receiver[i]);
-
-			// INIT Partition Tree
-			partitionTree = new PartitionTree(this.graph);
-		}
 	}
 
 	public String generateDemandToString() {
@@ -152,6 +127,10 @@ public class Broadcast implements Collective {
 		// }
 		// System.out.println();
 		// //
+		// DEBUG
+
+		System.err.println("Current Partitions:");
+		
 		return dl;
 	}
 
@@ -304,7 +283,7 @@ public class Broadcast implements Collective {
 
 	@Override
 	public int getDemandNumber() {
-		return activeDemands.getN_demand();
+		return activeDemands.getRealDemandNumber();
 	}
 
 	// public void setOwnerFromReceiver(int receiver, boolean b) {
@@ -359,7 +338,7 @@ public class Broadcast implements Collective {
 		} else {
 			owner.remove(newOwner);
 		}
-		// DEBUG
+		/* DEBUG
 		System.out.println("Current vertex = " + (newOwner-1));
 		PartitionLeaf pl = partitionTree.getPartitionLeaf(newOwner-1);
 		if (pl == null) {
@@ -369,7 +348,7 @@ public class Broadcast implements Collective {
 			Partition vect[] = dbp.partition(pl.getLeaf(), newOwner-1);
 			pl.bipartite(vect);
 		}
-		// DEBUG
+		*/
 
 	}
 

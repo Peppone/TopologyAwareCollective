@@ -2,6 +2,7 @@ package demand;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import commpattern.Broadcast;
 
@@ -54,8 +55,18 @@ public class DemandList {
 		}
 	}
 
-	public int getN_demand() {
-		return n_demand;
+	public int getAllDemandNumber(){
+		return list.size();
+	}
+	public int getRealDemandNumber() {
+		Iterator <Demand> it = list.iterator();
+		int demand = 0;
+		while(it.hasNext()){
+			Demand current = it.next();
+			if(current.getSender()!=current.getReceiver())
+				demand++;
+		}
+		return demand;
 	}
 
 	public void addDemand(Demand d) {
@@ -79,6 +90,10 @@ public class DemandList {
 	}
 
 	public String writeCplexTrailer() {
+		for(Demand d:list){
+			if(d.getSender()==d.getReceiver())
+				n_demand--;
+		}
 		String code = "";
 		code += "n_demand = " + n_demand + ";\n";
 		return code;
@@ -96,10 +111,12 @@ public class DemandList {
 		String minBwArray = "min_bitrate = [ ";
 		String demandAllocation = "ensure_allocation = [ ";
 		for (Demand d : list) {
+			if(d.getReceiver()!=d.getSender()){
 			demArray += d.writeDemand();
 			maxBwArray += d.writeMaxBW() + " ";
 			minBwArray += d.writeMinBW() + " ";
 			demandAllocation += d.writeIsAllocated() + " ";
+			}
 		}
 		demArray += "];\n";
 		maxBwArray += "];\n";
@@ -121,6 +138,9 @@ public class DemandList {
 		return list.remove(d);
 	}
 
+	public void clear(){
+		list.clear();
+	}
 	public boolean atLeastOneNotAllocatedDemand() {
 		for (Demand d : list) {
 			if (!d.isAllocated())

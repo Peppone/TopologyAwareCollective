@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 public class ExecuteShellCommand {
 
 	
-	public StringTokenizer[] executeCommand(String command, String option,String model, String data,String result) throws IOException, InterruptedException {
+	public StringTokenizer[] executeCommand(String command, String option,String model, String data, String libraryPath, String result) throws IOException, InterruptedException {
 
 
 		ProcessBuilder pb = new ProcessBuilder(command,option,model,data);
@@ -26,7 +26,7 @@ public class ExecuteShellCommand {
 		//pb.redirectOutput(out.redirectInput());
 		pb.environment()
 				.put("LD_LIBRARY_PATH",
-						"/home/peppone/ibm/ILOG/CPLEX_Studio1262/opl/bin/x86-64_linux/");
+						libraryPath);
 		Process p = pb.start();
 		p.waitFor();
 		//Process p1 = in.start();

@@ -25,13 +25,17 @@ public class Core {
 	private String resultFile;
 	private String dataFile;
 	private String dotFile;
+	private String oplPath;
+	private String model;
+	private String libPath;
 	private DemandList storyline;
 	private Graph graph;
-	
+
 	private boolean vertex[];
 
 	public Core(String resultFile, String dataFile, String dotFile,
-			Graph graph, Collective... collective) throws IOException {
+			String oplPath, String model, String libPath, Graph graph,
+			Collective... collective) throws IOException {
 		/**
 		 * public Core(int edge, String demandfile, String resultFile,
 		 * Collective... collective) throws IOException
@@ -45,10 +49,12 @@ public class Core {
 		this.dataFile = dataFile;
 		this.resultFile = resultFile;
 		this.dotFile = dotFile;
+		this.model = model;
 		u = null;
 		time = 0;
-		
-		vertex=new boolean[graph.getVertexNumber()];
+		this.oplPath = oplPath;
+		this.libPath = libPath;
+		vertex = new boolean[graph.getVertexNumber()];
 	}
 
 	public DemandList execute() throws IOException, InterruptedException {
@@ -65,8 +71,9 @@ public class Core {
 			for (Collective c : collectives) {
 				demands.merge(c.generateDemands());
 			}
-
-			if (demands.atLeastOneNotAllocatedDemand()) {
+			int realDemands = demands.getRealDemandNumber();
+			if (demands.atLeastOneNotAllocatedDemand()
+					&&  realDemands> 0) {
 				File data = new File(dataFile);
 				data.delete();
 				FileWriter fw = new FileWriter(data);
@@ -75,17 +82,15 @@ public class Core {
 						+ graph.writeCplexFooter() + demands.writeCplexFooter());
 				fw.close();
 				// EXECUTE CPLEX
-				String command = "/usr/local/bin/oplrun";
-				String model = "/home/peppone/opl/multidemandallocation/output.o";// args[1];
 				ExecuteShellCommand esc = new ExecuteShellCommand();
-				StringTokenizer res[] = esc.executeCommand(command, "-v",
-						model, dataFile, resultFile);
-
+				StringTokenizer res[] = esc.executeCommand(oplPath, "-v",
+						model, dataFile, libPath, resultFile);
+				System.out.println("END CPLEX");
 				// Leggi l'ouput di CPLEX
-				int allocation[] = new int[demands.getN_demand()];
-				int bit_rate[] = new int[demands.getN_demand()];
-				u = new ArrayList<Integer[]>(demands.getN_demand());
-				for (int i = 0; i < demands.getN_demand(); ++i) {
+				int allocation[] = new int[realDemands];
+				int bit_rate[] = new int[realDemands];
+				u = new ArrayList<Integer[]>(realDemands);
+				for (int i = 0; i < realDemands; ++i) {
 					u.add(i, new Integer[edge]);
 				}
 				// Leggi tutti i dati che servono
@@ -110,22 +115,27 @@ public class Core {
 					u.add(rowCounter, row);
 					rowCounter++;
 				}
+
 				// Crea il file per il simulatore
-				writeDotFile(demands, u, allocation, iteration_counter);
+				// writeDotFile(demands, u, allocation, iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();
 				int collective = 0;
 				ArrayList<Demand> allDemands = demands.getDemands();
-				for (int i = 0; i < demands.getN_demand(); ++i) {
+				for (int i = -1,total=0; total <demands.getAllDemandNumber(); ++total) {
+					Demand temp = demands.getDemand(total);
+					if(temp.getSender()==temp.getReceiver()) continue;
+					i++;
 					if (i > counter - 1) {
 						collective++;
 						counter += collectives.get(collective)
 								.getDemandNumber();
 					}
+					
 					if (allocation[i] == 0)
 						continue;
-					Demand d = allDemands.get(i);
+					Demand d = allDemands.get(total);
 					Collective current = collectives.get(collective);
 					int left = counter
 							- collectives.get(collective).getDemandNumber();
@@ -199,18 +209,25 @@ public class Core {
 			int[] allocation, int iteration_counter) throws IOException {
 		String dot = "digraph mygraph {\n";
 		int link = u.get(0).length;
-		for(int i =0;i<vertex.length;++i){
-			if(vertex[i]){
-				dot+="\t"+(i+1)+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+		for (int i = 0; i < vertex.length; ++i) {
+			if (vertex[i]) {
+				dot += "\t"
+						+ (i + 1)
+						+ "[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
 			}
 		}
-		for(int i =0; i< demands.getN_demand();++i){
-			if(allocation[i]>0){
+		int realDemands = demands.getRealDemandNumber();
+		for (int i = 0; i < realDemands; ++i) {
+			if (allocation[i] > 0) {
 				Demand demand = demands.getDemand(i);
-				dot+="\t"+demand.getSender()+"[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
-				vertex[demand.getSender()-1]=true;
-				dot+="\t"+demand.getReceiver()+"[style=\"filled\", color=\"red\", fillcolor=\"green\"];\n";
-				vertex[demand.getReceiver()-1]=true;
+				dot += "\t"
+						+ demand.getSender()
+						+ "[style=\"filled\", color=\"red\", fillcolor=\"yellow\"];\n";
+				vertex[demand.getSender() - 1] = true;
+				dot += "\t"
+						+ demand.getReceiver()
+						+ "[style=\"filled\", color=\"red\", fillcolor=\"green\"];\n";
+				vertex[demand.getReceiver() - 1] = true;
 			}
 
 		}
@@ -230,7 +247,8 @@ public class Core {
 				}
 			}
 			if (allocated) {
-				support = support.substring(0, support.length() - 1) + "\", color = \"red\"]";
+				support = support.substring(0, support.length() - 1)
+						+ "\", color = \"red\"]";
 			}
 			dot += support + ";\n";
 		}

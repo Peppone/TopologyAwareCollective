@@ -13,4 +13,6 @@ public interface PartitionTreeElement {
 	PartitionLeaf getPartitionLeaf(Integer vertex);
 	
 	ArrayList<Partition> retriveLeafPartitions();
+
+	void printPartitions();
 }

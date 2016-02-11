@@ -186,8 +186,8 @@ public class Graph {
 					capacitySize = Integer.parseInt(next);
 					int src = Integer.parseInt(source);
 					int dest = Integer.parseInt(destination);
-					if (adjMatrix[src - 1][dest - 1] == 0) {
-						adjMatrix[src - 1][dest - 1] = capacitySize;
+					if (adjMatrix[src][dest] == 0) {
+						adjMatrix[src][dest] = capacitySize;
 						n_edge++;
 					}
 					if (!st.isEmpty()) {
@@ -210,8 +210,8 @@ public class Graph {
 						}
 						int src = Integer.parseInt(source);
 						int dest = Integer.parseInt(destination);
-						if (adjMatrix[src - 1][dest - 1] == 0) {
-							adjMatrix[src - 1][dest - 1] = capacitySize;
+						if (adjMatrix[src][dest] == 0) {
+							adjMatrix[src][dest] = capacitySize;
 							n_edge++;
 						}
 
@@ -226,12 +226,12 @@ public class Graph {
 						}
 						int src = Integer.parseInt(source);
 						int dest = Integer.parseInt(destination);
-						if (adjMatrix[src - 1][dest - 1] == 0) {
-							adjMatrix[src - 1][dest - 1] = capacitySize;
+						if (adjMatrix[src][dest] == 0) {
+							adjMatrix[src][dest] = capacitySize;
 							n_edge++;
 						}
-						if (adjMatrix[dest - 1][src - 1] == 0) {
-							adjMatrix[dest - 1][src - 1] = capacitySize;
+						if (adjMatrix[dest ][src] == 0) {
+							adjMatrix[dest][src] = capacitySize;
 							n_edge++;
 						}
 					} else {
@@ -394,7 +394,14 @@ public class Graph {
 		}
 		return result;
 	}
-
+	/**
+	 * This method returns a customized bfs visit.
+	 * If we want to separate 
+	 * @param root
+	 * @param possibleReceiver
+	 * @param receiving
+	 * @return
+	 */
 	public HashMap<Integer, Integer> modifiedBfsVisit(int root,
 			HashSet<Integer> possibleReceiver, HashSet<Integer> receiving) {
 		/*
@@ -413,9 +420,9 @@ public class Graph {
 						if (bvertex[i][j] == 1) {
 							if (!map.containsKey(j + 1)) {
 								distance = (map.get(current_node) + 1);
-								if (!possibleReceiver.contains(j + 1)) {
+								//if (!possibleReceiver.contains(j + 1)) {
 									node.add(j + 1);
-								}
+								//}
 								map.put(j + 1, distance);
 							}
 							break;
@@ -519,13 +526,13 @@ public class Graph {
 
 	public void addVertexEdges(int vertex) {
 		for (int i = 0; i < n_edge; ++i) {
-			if (avertex[i][vertex - 1] == 1) {
-				if (!sender_edge.contains(i + 1))
-					sender_edge.add(i + 1);
+			if (avertex[i][vertex] == 1) {
+				if (!sender_edge.contains(i))
+					sender_edge.add(i);
 			}
-			if (bvertex[i][vertex - 1] == 1) {
-				if (!receiver_edge.contains(i + 1))
-					receiver_edge.add(i + 1);
+			if (bvertex[i][vertex] == 1) {
+				if (!receiver_edge.contains(i))
+					receiver_edge.add(i);
 			}
 		}
 	}

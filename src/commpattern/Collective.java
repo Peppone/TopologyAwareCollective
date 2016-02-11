@@ -3,7 +3,7 @@ package commpattern;
 import demand.DemandList;
 
 public interface Collective {
-	public String generateDemandToString();
+	//public String generateDemandToString();
 	public DemandList generateDemands();
 	public int getDemandNumber();
 	public void startTransmissionEvent(Object[] obj);
