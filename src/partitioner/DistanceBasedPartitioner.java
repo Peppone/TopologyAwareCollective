@@ -183,4 +183,7 @@ public class DistanceBasedPartitioner {
 		tree.printPartitions();
 	}
 
+	public Partition getPartition(Integer vertex){
+		return tree.getPartition(vertex);
+	}
 }

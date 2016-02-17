@@ -29,14 +29,14 @@ public class Main {
 	//	Graph dummy = new Graph(base + "dummygraph.txt");
 		//Graph tree = new Graph(base + "tree.txt");
 		//Graph maciej = new Graph(base + "mlist.txt");
-		//Graph mesh = new Graph(base + "mesh.txt");
+		Graph mesh = new Graph(base + "mesh.txt");
 		Graph line = new Graph(base + "line.txt");
 		//Graph custom = new Graph(base + "custom.txt");
 	//	Graph dFly = new Graph(base + "dragonfly.txt");
 		Graph torus2d = new Graph(base + "2dtorus.txt");
 		
-	//	NewBroadcast bMesh = new NewBroadcast(0,
-		//		new int[] {1,2, 3, 4, 5, 6, 7, 8 },100, mesh);
+		NewBroadcast bMesh = new NewBroadcast(0,
+				new int[] {1,2, 3, 4, 5, 6, 7, 8,9,10,11,12,13,14,15 },100, mesh);
 
 		//Già ridotto di uno
 		//NewBroadcast mac = new NewBroadcast(50, new int[] {51, 52, 53, 54, 55 },
@@ -70,9 +70,9 @@ public class Main {
 		String dotFile = base+"dotfile.dot";
 		String model = args[2];
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, dummy, bDummy);
-		 Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, line, bLine);
+		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, line, bLine);
 		//Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, tree, bTree);
-		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, mesh, bMesh);
+		 Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, mesh, bMesh);
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, maciej, mac);
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, custom, bCustom);
 	// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, torus2d, bTorus2d);

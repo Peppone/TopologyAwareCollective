@@ -1,15 +1,15 @@
 package commpattern;
 
-import graph.Graph;
-
 import java.util.HashMap;
 import java.util.HashSet;
 
+import demand.Demand;
+import demand.DemandList;
+import graph.Graph;
 import model.SimpleModel;
 import model.TransmissionModel;
 import partitioner.DistanceBasedPartitioner;
-import demand.Demand;
-import demand.DemandList;
+import partitioner.Partition;
 
 public class NewBroadcast implements Collective {
 
@@ -35,7 +35,7 @@ public class NewBroadcast implements Collective {
 		this.transmitting = new HashSet<Integer>(receiver.length);
 		this.receiving = new HashSet<Integer>(receiver.length);
 		this.activeDemands = new DemandList();
-		this.trxModel = new SimpleModel(100,10);
+		this.trxModel = new SimpleModel(100,2);
 		this.partitioner = new DistanceBasedPartitioner(graph);
 		this.minBitrate = minBitrate;
 		this.maxBitrate = maxBitrate;
@@ -123,7 +123,21 @@ public class NewBroadcast implements Collective {
 			activeDemands.addDemand(fake);
 			owner.add(sender);
 			transmitting.remove(sender);
+			Partition recPart = partitioner.getPartition(receiver);
+			if (recPart.contains(sender)){
 			partitioner.bipartite(sender, receiver);
+			}else{
+				//DEBUG
+				System.err.println("Spedito a qualcuno che non appartiene alla mia partizione");
+				//END DEBUG
+				for (Integer in:recPart.getVertex()){
+					if(in==receiver) continue;
+					if(owner.contains(in)){
+						partitioner.bipartite(receiver, in);
+						break;
+					}
+				}
+			}
 		}
 		else{
 		owner.add(receiver);

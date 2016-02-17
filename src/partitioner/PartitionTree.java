@@ -45,6 +45,8 @@ public class PartitionTree {
 		ArrayList<Integer> solutions = new ArrayList<Integer>();
 		while (it.hasNext()) {
 			dest = it.next();
+			if(dest==vertex)continue;
+			
 			if (current.contains(dest)) {
 				solutions.add(dest);
 			}
@@ -67,20 +69,21 @@ public class PartitionTree {
 					assert(parent.getRight() == oldParent);
 					toInvestigate = parent.getLeft();
 				}
+				//START DEBUG
+				//System.out.println("CI SIAMO col nodo -> "+vertex);
+				//END DEBUG
+
 				ArrayList<Partition> leaves = toInvestigate
 						.retriveLeafPartitions();
 				for (Partition p : leaves) {
 					it = p.getIterator();
 					while (it.hasNext()) {
 						dest = it.next();
-						if (current.contains(dest)) {
+						if (receivers.contains(dest)) {
 							solutions.add(dest);
 						}
 					}
 				}
-				if (parent == null)
-					break;
-
 			}
 			return solutions;
 		}
