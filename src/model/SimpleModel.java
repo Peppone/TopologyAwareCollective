@@ -35,7 +35,7 @@ public class SimpleModel implements TransmissionModel {
 			Demand d, Object[] obj) {
 		double start = d.getLastUpdateTime();
 		double expectedTimeEnd = d.getEndTime();
-		int initialBw = d.getMin_bandwidth();
+		int initialBw = 0;
 		if (initialBw == newBw)
 			return expectedTimeEnd;
 		Integer nHops = (Integer) obj[0];
@@ -43,7 +43,6 @@ public class SimpleModel implements TransmissionModel {
 		double percentageToTransmit = (1.0 - previousPercentage)
 				* (expectedTimeEnd - now) / (expectedTimeEnd - start);
 		d.setTransmittedPercentage(1 - percentageToTransmit);
-		d.setMin_bandwidth(newBw);
 		d.setLastUpdateTime(now);
 		return now + messageSize * (percentageToTransmit * nHops) / newBw;
 	}

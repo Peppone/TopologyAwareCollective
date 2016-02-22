@@ -86,7 +86,7 @@ public class Broadcast implements Collective {
 				if (receiving[i]
 						|| !favourite_transmitter.containsKey(receiver[i]))
 					continue;
-				demand = new Demand(sender, receiver[i], min_bitrate[i],
+				demand = new Demand(sender, receiver[i],
 						max_bitrate[i], false, 0, 0, 1, this);
 				// if (favourite_transmitter[i][1] == sender) {
 
@@ -196,7 +196,6 @@ public class Broadcast implements Collective {
 		allocatedDemand.setStartTime(now);
 		allocatedDemand.setEndTime(trxModel.computeTotalTransmissionTime(now,
 				bit_rate, arr));
-		allocatedDemand.setMin_bandwidth(bit_rate);
 		setReceivingFromReceiver(allocatedDemand.getReceiver(), true);
 		allocatedDemand.setAllocated(true);
 		// activeDemands.addDemand(allocatedDemand);
@@ -213,33 +212,6 @@ public class Broadcast implements Collective {
 		return res;
 	}
 
-	@Override
-	public void updateTransmissionEvent(Object[] obj) {
-		// TODO Copiare su ModifiedDemand la vecchia banda
-		double now = (Double) obj[0];
-		Demand modifiedDemand = (Demand) obj[1];
-		Demand old = removeFromList(modifiedDemand.getSender(),
-				modifiedDemand.getReceiver());
-		// assert (check);
-		modifiedDemand.setAllocated(true);
-		modifiedDemand.setMin_bandwidth(old.getMin_bandwidth());
-		Integer[] link = (Integer[]) obj[2];
-		int new_bit_rate = (Integer) obj[3];
-		int destination = modifiedDemand.getReceiver();
-		setReceivingFromReceiver(destination, true);
-		int hopCounter = 0;
-		for (Integer i : link) {
-			if (i > 0)
-				hopCounter++;
-		}
-		Object arr[] = new Object[1];
-		arr[0] = hopCounter;
-		trxModel.computeRemainingTransmissionTime(now, new_bit_rate,
-				modifiedDemand, arr);
-		activeDemands.addDemand(modifiedDemand);
-		return;
-
-	}
 
 	@Override
 	public void endTransmissionEvent(Object[] obj) {

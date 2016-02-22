@@ -13,6 +13,7 @@ public class Graph {
 	int[][] avertex;
 	int[][] bvertex;
 	int[] edge;
+	int [] maxEdge;
 	ArrayList<ArrayList<Integer>> list;
 	ArrayList<Integer> sender_edge;
 	ArrayList<Integer> receiver_edge;
@@ -32,6 +33,7 @@ public class Graph {
 		}
 		edge = new int[g.edge.length];
 		edge = g.edge.clone();
+		
 		n_vertex = g.n_vertex;
 		h_edge = g.h_edge;
 		n_edge = g.n_edge;
@@ -52,17 +54,7 @@ public class Graph {
 
 		sender_edge = new ArrayList<Integer>();
 		receiver_edge = new ArrayList<Integer>();
-		/*
-		 * for (int i = 0; i < avertex[0].length; ++i) { int se =
-		 * findEndNodeEdge(i, avertex); if (se > -1) { sender_edge.add(se); } }
-		 * for (int i = 0; i < bvertex[0].length; ++i) { int se =
-		 * findEndNodeEdge(i, bvertex); if (se > -1) { receiver_edge.add(se); }
-		 * }
-		 * 
-		 * for (int i = 0; i < edge.length; ++i) {
-		 * 
-		 * }
-		 */
+		maxEdge = edge.clone();
 	}
 
 	private String writeMatrix(String name, int mat[][]) {
@@ -535,5 +527,18 @@ public class Graph {
 					receiver_edge.add(i);
 			}
 		}
+	}
+	
+	public void setEdgeCapacity(int edge, int capacity){
+		this.edge[edge]=capacity;
+	}
+	public void increaseEdgeCapacity(int edge, int capacityToIncrease){
+		this.edge[edge]+=capacityToIncrease;
+		assert(this.edge[edge]<= maxEdge[edge]);
+	}
+	public void decreaseEdgeCapacity(int edge, int capacityToDecrease){
+		this.edge[edge]-=capacityToDecrease;
+		assert(this.edge[edge]>=0);
+		
 	}
 }

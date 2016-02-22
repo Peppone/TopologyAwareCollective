@@ -71,10 +71,10 @@ public class Main {
 		String dotFile = base+"dotfile.dot";
 		String model = args[2];
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, dummy, bDummy);
-		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, line, bLine);
+		 Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, line, bLine);
 		//Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, tree, bTree);
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, mesh, bMesh);
-		 Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, maciej, mac);
+		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, maciej, mac);
 		// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, custom, bCustom);
 	// Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, torus2d, bTorus2d);
 		 //Core c = new Core(resultFile, dataFile, dotFile, oplidePath, model,libPath, dFly, bDFly);

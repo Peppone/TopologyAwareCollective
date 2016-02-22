@@ -9,22 +9,23 @@ public class Demand {
 	private Collective collective;
 	// private int s_edge;
 	// private int r_edge;
-	private int max_bandwidth;
-	private int min_bandwidth;
+	private final int max_bandwidth;
 	private int weight;
 	private boolean isAllocated;
+	private int bitrate;
 	private double t_start;
 	private double t_end;
 	private double lastUpdateTime;
 	private double transmitted_percentage;
+	private int linkUtilization[];
 
 	public Demand(int s, int r,/* int se, int re, */int max_b,
 			Collective collective) {
-		this(s, r,/* se,re, */0, max_b, false, 0, 0,1, collective);
+		this(s, r, max_b, false, 0, 0,1, collective);
 
 	}
 
-	public Demand(int s, int r,/* int se, int re, */int min_b, int max_b,
+	public Demand(int s, int r,/* int se, int re, */ int max_b,
 			boolean allocation, double t_start, double t_end,int weight,
 			Collective collective) {
 		sender = s;
@@ -32,7 +33,6 @@ public class Demand {
 		// s_edge = se;
 		// r_edge = re;
 		max_bandwidth = max_b;
-		min_bandwidth = min_b;
 		isAllocated = allocation;
 		this.weight=weight;
 		this.collective = collective;
@@ -41,6 +41,8 @@ public class Demand {
 			lastUpdateTime = t_start;
 			this.t_end = t_end;
 		}
+		linkUtilization = null;
+		bitrate = -1;
 	}
 
 	public int getSender() {
@@ -80,24 +82,25 @@ public class Demand {
 	}
 
 
-	public int getMax_bandwidth() {
-		return max_bandwidth;
-	}
+//	public int getMax_bandwidth() {
+//		return max_bandwidth;
+//	}
 
-	public void setMax_bandwidth(int max_bandwidth) {
-		this.max_bandwidth = max_bandwidth;
-	}
+//	public void setMax_bandwidth(int max_bandwidth) {
+//		this.max_bandwidth = max_bandwidth;
+//	}
 
-	public int getMin_bandwidth() {
-		return min_bandwidth;
-	}
-
-	public void setMin_bandwidth(int min_bandwidth) {
-		this.min_bandwidth = min_bandwidth;
-	}
 
 	public boolean isAllocated() {
 		return isAllocated;
+	}
+
+	public int getBitrate() {
+		return bitrate;
+	}
+
+	public void setBitrate(int bitrate) {
+		this.bitrate = bitrate;
 	}
 
 	public void setAllocated(boolean isAllocated) {
@@ -134,9 +137,6 @@ public class Demand {
 		return "" + max_bandwidth;
 	}
 
-	public String writeMinBW() {
-		return "" + min_bandwidth;
-	}
 	
 	
 	public int getWeight() {
@@ -146,7 +146,19 @@ public class Demand {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
-
+	public void setLinkUtilization(int linkUtilization[]){
+		this.linkUtilization = linkUtilization;
+	}
+	public void setLinkUtilization(Integer linkUtilization[]){
+		
+		this.linkUtilization = new int[linkUtilization.length];
+		for(int i =0 ;i< linkUtilization.length;++i){
+			this.linkUtilization[i]=linkUtilization[i];
+		}
+	}
+	public int [] getLinkUtilization(){
+		return this.linkUtilization ;
+	}
 	public String writeWeight(){
 		return "" + weight;
 	}

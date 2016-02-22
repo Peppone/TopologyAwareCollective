@@ -81,12 +81,13 @@ public class Core {
 						+ demands.writeCplexTrailer()
 						+ graph.writeCplexFooter() + demands.writeCplexFooter());
 				fw.close();
-				// EXECUTE CPLEX
+				// Execute CPLEX
 				ExecuteShellCommand esc = new ExecuteShellCommand();
 				StringTokenizer res[] = esc.executeCommand(oplPath, "-v",
 						model, dataFile, libPath, resultFile);
-				System.out.println("END CPLEX");
-				// Leggi l'ouput di CPLEX
+			//	System.out.println("END CPLEX");
+				
+				//Read the CPLEX output
 				int allocation[] = new int[realDemands];
 				int bit_rate[] = new int[realDemands];
 				u = new ArrayList<Integer[]>(realDemands);
@@ -123,10 +124,9 @@ public class Core {
 				int counter = collectives.get(0).getDemandNumber();
 				int collective = 0;
 				ArrayList<Demand> allDemands = demands.getDemands();
-				for (int i = -1,total=0; total <demands.getAllDemandNumber(); ++total) {
-					Demand temp = demands.getDemand(total);
-					if(temp.getSender()==temp.getReceiver()) continue;
-					i++;
+				ArrayList <Demand> usefulDemands = demands.getAllUsefuldDemands();
+				for (int i = 0; i <usefulDemands.size(); ++i) {
+					Demand temp = usefulDemands.get(i);
 					if (i > counter - 1) {
 						collective++;
 						counter += collectives.get(collective)
@@ -135,20 +135,15 @@ public class Core {
 					
 					if (allocation[i] == 0)
 						continue;
-					Demand d = allDemands.get(total);
+					Demand d = usefulDemands.get(i);
 					Collective current = collectives.get(collective);
 					int left = counter
 							- collectives.get(collective).getDemandNumber();
 					int index = i - left;
 					Object obj[] = toObjectArray(time, d, u.get(i),
 							bit_rate[i], index);
-					if (d.isAllocated()) {
-						current.updateTransmissionEvent(obj);
-					} else {
 						storyline.addDemand(d);
-						assert ((Integer) obj[3] > 0);
 						current.startTransmissionEvent(obj);
-					}
 				}
 			}
 			// Avanza il tempo ed effettua il pop degli eventi
@@ -163,8 +158,8 @@ public class Core {
 			if (toRemove.size() > 0) {
 				collectives.removeAll(toRemove);
 			}
-			System.out.println("finita iterazione in "
-					+ (System.nanoTime() - start) / 1E9);
+		//	System.out.println("finita iterazione in "
+		//			+ (System.nanoTime() - start) / 1E9);
 			iteration_counter++;
 		}
 		return storyline;
@@ -199,12 +194,18 @@ public class Core {
 		for (Demand d : toRemove) {
 			Collective current = d.getCollective();
 			Object obj[] = toObjectArray(d);
-			;
+			
 			current.endTransmissionEvent(obj);
 		}
 		return minimumTime;
 	}
 
+	private void updateGraph(int [] u){
+		assert(u.length == graph.getEdgeNumber());
+		for(int i=0;i<u.length;++i){
+			graph.decreaseEdgeCapacity(i, u[i]);
+		}
+	}
 	private String writeDotFile(DemandList demands, ArrayList<Integer[]> u,
 			int[] allocation, int iteration_counter) throws IOException {
 		String dot = "digraph mygraph {\n";
