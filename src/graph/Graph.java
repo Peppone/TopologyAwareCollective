@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import utility.MyTokenizer;
+
 public class Graph {
 	int[][] avertex;
 	int[][] bvertex;
@@ -136,10 +138,8 @@ public class Graph {
 				line_counter++;
 				continue;
 			}
-			// StringTokenizer st = new StringTokenizer(line, "[->][<->]",true);
 			ArrayList<String> st = MyTokenizer.tokenize(line);
 
-			// int numTokens = st.countTokens();
 			int numTokens = st.size();
 			String lastToken = st.get(st.size() - 1);
 			if (numTokens < 3) {
@@ -234,19 +234,8 @@ public class Graph {
 				}
 
 			}
-			/*
-			 * while (st.hasMoreTokens()) { destination = st.nextToken();
-			 * destination = destination.trim(); String[] tokens = null; if
-			 * (source != null) { tokens = destination.split("[\\s+]"); if
-			 * (tokens.length == 1) { capacitySize = 100; } else { capacitySize
-			 * = Integer.parseInt(tokens[1]); } int src =
-			 * Integer.parseInt(source); int dest = Integer.parseInt(tokens[0]);
-			 * if (adjMatrix[src - 1][dest - 1] == 0) { adjMatrix[src - 1][dest
-			 * - 1] = capacitySize; n_edge++; } destination = tokens[0]; }
-			 * source = destination; }
-			 */
 		}
-
+		br.close();
 		avertex = new int[n_edge][n_vertex];
 		bvertex = new int[n_edge][n_vertex];
 		edge = new int[n_edge];
@@ -280,11 +269,11 @@ public class Graph {
 			}
 		}
 		h_edge = n_edge >> 1;
-		br.close();
+	
 
 	}
 
-	private void readAdjMatrixFromFile(String filename) throws IOException {
+	public void readAdjMatrixFromFile(String filename) throws IOException {
 		File adjMatrixFile = new File(filename);
 		BufferedReader br = new BufferedReader(new FileReader(adjMatrixFile));
 		String line = br.readLine();

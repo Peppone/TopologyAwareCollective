@@ -58,15 +58,10 @@ public class Core {
 	}
 
 	public DemandList execute() throws IOException, InterruptedException {
-		// TODO: Migliorare la gestione dell'output file generato CPLEX. Fa
-		// troppo schifo a causa del formato delle variabili.
 
 		storyline = new DemandList();
 		int iteration_counter = 0;
 		while (collectives.size() != 0) {
-			// DEBUG
-			long start = System.nanoTime();
-			//
 			demands = new DemandList();
 			for (Collective c : collectives) {
 				demands.merge(c.generateDemands());
@@ -84,9 +79,7 @@ public class Core {
 				// Execute CPLEX
 				ExecuteShellCommand esc = new ExecuteShellCommand();
 				StringTokenizer res[] = esc.executeCommand(oplPath, "-v",
-						model, dataFile, libPath, resultFile);
-			//	System.out.println("END CPLEX");
-				
+						model, dataFile, libPath, resultFile);			
 				//Read the CPLEX output
 				int allocation[] = new int[realDemands];
 				int bit_rate[] = new int[realDemands];
@@ -118,15 +111,13 @@ public class Core {
 				}
 
 				// Crea il file per il simulatore
-				// writeDotFile(demands, u, allocation, iteration_counter);
+				 writeDotFile(demands, u, allocation, iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();
 				int collective = 0;
-				ArrayList<Demand> allDemands = demands.getDemands();
 				ArrayList <Demand> usefulDemands = demands.getAllUsefuldDemands();
 				for (int i = 0; i <usefulDemands.size(); ++i) {
-					Demand temp = usefulDemands.get(i);
 					if (i > counter - 1) {
 						collective++;
 						counter += collectives.get(collective)
@@ -158,8 +149,6 @@ public class Core {
 			if (toRemove.size() > 0) {
 				collectives.removeAll(toRemove);
 			}
-		//	System.out.println("finita iterazione in "
-		//			+ (System.nanoTime() - start) / 1E9);
 			iteration_counter++;
 		}
 		return storyline;
@@ -200,12 +189,7 @@ public class Core {
 		return minimumTime;
 	}
 
-	private void updateGraph(int [] u){
-		assert(u.length == graph.getEdgeNumber());
-		for(int i=0;i<u.length;++i){
-			graph.decreaseEdgeCapacity(i, u[i]);
-		}
-	}
+
 	private String writeDotFile(DemandList demands, ArrayList<Integer[]> u,
 			int[] allocation, int iteration_counter) throws IOException {
 		String dot = "digraph mygraph {\n";

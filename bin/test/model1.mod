@@ -16,7 +16,6 @@ int n_sender=...;
 
 /************ DEMANDS ************/
 float max_bitrate[1..n_demand]=...;
-float min_bitrate[1..n_demand]=...;
 int demand [1..n_demand][1..3]=...;//Source / destination / weight
 int receiver_edge[1..n_receiver]=...;
 int sender_edge[1..n_sender]=...;
@@ -42,7 +41,7 @@ maximize sum(i in 1..n_demand)(allocation[i]*bitrate[i]*demand[i][3]-sum(j in 1.
 
 subject to {
 	forall(i in 1..n_demand){
-		min_bitrate[i]<=bitrate[i]<=max_bitrate[i];
+		0<=bitrate[i]<=max_bitrate[i];
 		allocation[i]*bitrate[i]>=bitrate[i];
 		allocation[i]*bitrate[i]>=allocation[i];	
 		forall(j in 1..n_edge){

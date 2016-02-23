@@ -1,27 +1,15 @@
 package demand;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
-import commpattern.Broadcast;
-
 public class DemandList {
-	// DIREI DI TOGLIERE N_sender, N_receiver, N-Demand
 	private ArrayList<Demand> list;
-	private int n_sender;
-	private int n_receiver;
 	private int n_demand;
-	private HashSet<Integer> sender;
-	private HashSet<Integer> receiver;
 
 	public DemandList() {
 		list = new ArrayList<Demand>();
-		n_sender = 0;
-		n_receiver = 0;
 		n_demand = 0;
-		receiver = new HashSet<Integer>();
-		sender = new HashSet<Integer>();
 	}
 
 	public static DemandList mergeAllocated(DemandList a, DemandList b) {
@@ -96,15 +84,6 @@ public class DemandList {
 
 		list.add(d);
 		n_demand++;
-
-		if (!sender.contains(d.getSender())) {
-			n_sender++;
-
-		}
-
-		if (!receiver.contains(d.getReceiver())) {
-			n_receiver++;
-		}
 	}
 
 	public String writeCplexCode() {
@@ -176,59 +155,59 @@ public class DemandList {
 		return print;
 	}
 
-	public String writeBroadcastGoalFile() {
-		String goal = "";
-		Broadcast b = (Broadcast) list.get(0).getCollective();
-		int root = b.getSender();
-		int destN = b.getReceiver().length;
-		goal += "num_ranks " + (1 + destN) + "\n";
-		String sender = "";
-
-		sender += "rank " + 0 + "{\n\t";
-		String receiver[] = new String[destN];
-		int[] rcvFlag = new int[destN];
-		int sndFlag = 0;
-
-		for (int i = 0; i < destN; ++i) {
-			receiver[i] = "";
-			receiver[i] += "rank " + (i + 1) + "{\n\t";
-		}
-		int dest;
-		int src;
-		for (Demand d : list) {
-			src = d.getSender();
-			dest = d.getReceiver();
-			if (src == root) {
-				sender += "l" + sndFlag + ": send 100b to " + (b.getIndexFromReceiver(dest) + 1) + " tag 0\n\t";
-				if (sndFlag != 0) {
-					sender += "l" + (sndFlag) + " requires l" + (sndFlag - 1) + "\n\t";
-				}
-				sndFlag++;
-			} else {
-				receiver[b.getIndexFromReceiver(src)] += "l" + rcvFlag[b.getIndexFromReceiver(src)] + ": send 100b to "
-						+ (b.getIndexFromReceiver(dest) + 1) + " tag 0\n\t";
-				if (rcvFlag[b.getIndexFromReceiver(src)] != 0) {
-					receiver[b.getIndexFromReceiver(src)] += "l" + rcvFlag[b.getIndexFromReceiver(src)] + " requires l"
-							+ (rcvFlag[b.getIndexFromReceiver(src)] - 1) + "\n\t";
-				}
-				rcvFlag[b.getIndexFromReceiver(src)]++;
-			}
-			receiver[b.getIndexFromReceiver(dest)] += "l" + rcvFlag[b.getIndexFromReceiver(dest)] + ": recv 100b from "
-					+ (b.getIndexFromReceiver(src) + 1) + " tag 0\n\t";
-			if (rcvFlag[b.getIndexFromReceiver(dest)] != 0) {
-				receiver[b.getIndexFromReceiver(dest)] += "l" + (rcvFlag[b.getIndexFromReceiver(dest)]) + " requires l"
-						+ (rcvFlag[b.getIndexFromReceiver(dest)] - 1) + "\n\t";
-			}
-			rcvFlag[b.getIndexFromReceiver(dest)]++;
-		}
-		sender += "}\n";
-		goal += sender + "\n";
-
-		for (int i = 0; i < n_receiver; ++i) {
-			goal += receiver[i] + "\n}\n";
-		}
-		return goal;
-	}
+//	public String writeBroadcastGoalFile() {
+//		String goal = "";
+//		Broadcast b = (Broadcast) list.get(0).getCollective();
+//		int root = b.getSender();
+//		int destN = b.getReceiver().length;
+//		goal += "num_ranks " + (1 + destN) + "\n";
+//		String sender = "";
+//
+//		sender += "rank " + 0 + "{\n\t";
+//		String receiver[] = new String[destN];
+//		int[] rcvFlag = new int[destN];
+//		int sndFlag = 0;
+//
+//		for (int i = 0; i < destN; ++i) {
+//			receiver[i] = "";
+//			receiver[i] += "rank " + (i + 1) + "{\n\t";
+//		}
+//		int dest;
+//		int src;
+//		for (Demand d : list) {
+//			src = d.getSender();
+//			dest = d.getReceiver();
+//			if (src == root) {
+//				sender += "l" + sndFlag + ": send 100b to " + (b.getIndexFromReceiver(dest) + 1) + " tag 0\n\t";
+//				if (sndFlag != 0) {
+//					sender += "l" + (sndFlag) + " requires l" + (sndFlag - 1) + "\n\t";
+//				}
+//				sndFlag++;
+//			} else {
+//				receiver[b.getIndexFromReceiver(src)] += "l" + rcvFlag[b.getIndexFromReceiver(src)] + ": send 100b to "
+//						+ (b.getIndexFromReceiver(dest) + 1) + " tag 0\n\t";
+//				if (rcvFlag[b.getIndexFromReceiver(src)] != 0) {
+//					receiver[b.getIndexFromReceiver(src)] += "l" + rcvFlag[b.getIndexFromReceiver(src)] + " requires l"
+//							+ (rcvFlag[b.getIndexFromReceiver(src)] - 1) + "\n\t";
+//				}
+//				rcvFlag[b.getIndexFromReceiver(src)]++;
+//			}
+//			receiver[b.getIndexFromReceiver(dest)] += "l" + rcvFlag[b.getIndexFromReceiver(dest)] + ": recv 100b from "
+//					+ (b.getIndexFromReceiver(src) + 1) + " tag 0\n\t";
+//			if (rcvFlag[b.getIndexFromReceiver(dest)] != 0) {
+//				receiver[b.getIndexFromReceiver(dest)] += "l" + (rcvFlag[b.getIndexFromReceiver(dest)]) + " requires l"
+//						+ (rcvFlag[b.getIndexFromReceiver(dest)] - 1) + "\n\t";
+//			}
+//			rcvFlag[b.getIndexFromReceiver(dest)]++;
+//		}
+//		sender += "}\n";
+//		goal += sender + "\n";
+//
+//		for (int i = 0; i < n_receiver; ++i) {
+//			goal += receiver[i] + "\n}\n";
+//		}
+//		return goal;
+//	}
 
 	public Demand getDemand(int index) {
 		return list.get(index);

@@ -7,7 +7,7 @@ import java.io.IOException;
 import algorithm.Core;
 
 import commpattern.Broadcast;
-import commpattern.NewBroadcast;
+import commpattern.Broadcast;
 
 import demand.DemandList;
 
@@ -16,7 +16,7 @@ public class Main {
 	/**
 	 * @param args[0] - libraryPath
 	 * @param args[1] - oplide Path
-	 * @params args[2] - model Path
+	 * @param args[2] - model Path
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
@@ -35,15 +35,14 @@ public class Main {
 	//	Graph dFly = new Graph(base + "dragonfly.txt");
 		Graph torus2d = new Graph(base + "2dtorus.txt");
 		
-		NewBroadcast bMesh = new NewBroadcast(0,
+		Broadcast bMesh = new Broadcast(0,
 				new int[] {1,2, 3, 4, 5, 6, 7, 8,9,10,11,12,13,14,15 },100, mesh);
 
-		//Già ridotto di uno
-		NewBroadcast mac = new NewBroadcast(50, new int[] {51, 52, 53, 54, 55 },
+		Broadcast mac = new Broadcast(50, new int[] {51, 52, 53, 54, 55 },
 				100, maciej);
-		//NewBroadcast bDummy = new NewBroadcast(3, new int[] {0, 1, 2 }, 100, dummy);
+		//Broadcast bDummy = new Broadcast(3, new int[] {0, 1, 2 }, 100, dummy);
 
-		//NewBroadcast bTorus2d = new NewBroadcast(0, new int[] {1, 2, 3, 4, 5, 6, 7, 8,
+		//Broadcast bTorus2d = new Broadcast(0, new int[] {1, 2, 3, 4, 5, 6, 7, 8,
 			//	9, 10, 11, 12, 13, 14, 15 },  100 ,
 				//torus2d);
 
@@ -60,7 +59,7 @@ public class Main {
 //				100, 100, 100, 100 }, line);
 		//debug
 		
-		NewBroadcast bLine = new NewBroadcast(0, new int[] { 1,2, 3, 4,5,6,7,8,9,10,11,12,13,14,15 }, 100, line);
+		Broadcast bLine = new Broadcast(0, new int[] { 1,2, 3, 4,5,6,7,8,9,10,11,12,13,14,15 }, 100, line);
 	/*	Broadcast bDFly = new Broadcast(1, new int[] { 2, 3, 4, 5, 6, 7, 8, 9,
 				10, 11, 12, 13, 14, 15, 16 }, new int[] { 100, 100, 100, 100,
 				100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100 },
@@ -82,8 +81,6 @@ public class Main {
 		DemandList result = c.execute();
 		long endTime = System.nanoTime();
 		System.out.println((endTime - startTime) / 1E9 + " sec\n"
-				+ result.printList());
-
-		// System.out.println(result.writeBroadcastGoalFile());
+				+ result.printList());;
 	}
 }

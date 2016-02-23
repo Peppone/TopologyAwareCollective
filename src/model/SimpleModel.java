@@ -1,6 +1,5 @@
 package model;
 
-import demand.Demand;
 
 public class SimpleModel implements TransmissionModel {
 
@@ -30,21 +29,5 @@ public class SimpleModel implements TransmissionModel {
 		}
 	}
 
-	@Override
-	public double computeRemainingTransmissionTime(double now, int newBw,
-			Demand d, Object[] obj) {
-		double start = d.getLastUpdateTime();
-		double expectedTimeEnd = d.getEndTime();
-		int initialBw = 0;
-		if (initialBw == newBw)
-			return expectedTimeEnd;
-		Integer nHops = (Integer) obj[0];
-		double previousPercentage = d.getTransmittedPercentage();
-		double percentageToTransmit = (1.0 - previousPercentage)
-				* (expectedTimeEnd - now) / (expectedTimeEnd - start);
-		d.setTransmittedPercentage(1 - percentageToTransmit);
-		d.setLastUpdateTime(now);
-		return now + messageSize * (percentageToTransmit * nHops) / newBw;
-	}
 
 }

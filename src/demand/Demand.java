@@ -111,7 +111,6 @@ public class Demand {
 		return collective;
 	}
 
-	
 	public double getTransmittedPercentage() {
 		return transmitted_percentage;
 	}
@@ -136,8 +135,6 @@ public class Demand {
 	public String writeMaxBW() {
 		return "" + max_bandwidth;
 	}
-
-	
 	
 	public int getWeight() {
 		return weight;
@@ -146,9 +143,11 @@ public class Demand {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
+	
 	public void setLinkUtilization(int linkUtilization[]){
 		this.linkUtilization = linkUtilization;
 	}
+	
 	public void setLinkUtilization(Integer linkUtilization[]){
 		
 		this.linkUtilization = new int[linkUtilization.length];
@@ -156,9 +155,11 @@ public class Demand {
 			this.linkUtilization[i]=linkUtilization[i];
 		}
 	}
+	
 	public int [] getLinkUtilization(){
 		return this.linkUtilization ;
 	}
+	
 	public String writeWeight(){
 		return "" + weight;
 	}
