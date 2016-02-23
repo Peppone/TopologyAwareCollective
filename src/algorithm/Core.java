@@ -111,7 +111,7 @@ public class Core {
 				}
 
 				// Crea il file per il simulatore
-				 writeDotFile(demands, u, allocation, iteration_counter);
+				 //writeDotFile(demands, u, allocation, iteration_counter);
 
 				// Comunica tutti i risultati alle varie collectives
 				int counter = collectives.get(0).getDemandNumber();

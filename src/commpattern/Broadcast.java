@@ -113,23 +113,10 @@ public class Broadcast implements Collective {
 			activeDemands.addDemand(fake);
 			owner.add(sender);
 			transmitting.remove(sender);
-			Partition recPart = partitioner.getPartition(receiver);
 			int link[] = d.getLinkUtilization();
 			for (int i = 0; i < link.length; ++i) {
 				if (link[i] > 0)
 					graph.increaseEdgeCapacity(i, d.getBitrate());
-			}
-			if (recPart.contains(sender)) {
-				partitioner.bipartite(sender, receiver);
-			} else {
-				for (Integer in : recPart.getVertex()) {
-					if (in == receiver)
-						continue;
-					if (owner.contains(in)) {
-						partitioner.bipartite(receiver, in);
-						break;
-					}
-				}
 			}
 		} else {
 			owner.add(receiver);

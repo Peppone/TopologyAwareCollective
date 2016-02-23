@@ -33,56 +33,89 @@ public class DistanceBasedPartitioner {
 	 * @param probableDestinations
 	 * @return
 	 */
-	public HashMap<Integer, Integer> generateDemands(Integer sender,
-			Collection<Integer> probableDestinations) {
+
+	public HashMap<Integer, Integer> generateDemands(Integer sender, Collection<Integer> probableDestinations) {
 		int[] visit;
-		
+
 		if (bfsVisits.containsKey(sender)) {
 			visit = bfsVisits.get(sender);
 		} else {
 			visit = graph.bfs(sender);
 			bfsVisits.put(sender, visit);
 		}
-		ArrayList<Integer> destinations = tree.findPossibleDestinations(sender,
-				probableDestinations);
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(
-				destinations.size());
-		//IMPROVEMENT
-		int maxDistance = -1;
+		ArrayList<Integer> destinations = tree.findPossibleDestinations(sender, probableDestinations);
+		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(destinations.size());
+		// PROVA
+		// int maxDistance = -1;
+		boolean samePartition = false;
 		ArrayList<Integer> candidate = new ArrayList<Integer>();
+		Partition senderPartition = tree.getPartition(sender);
+		for (Integer dest : destinations) {
+			if (tree.getPartition(dest) == senderPartition) {
+				samePartition = true;
+				candidate.add(dest);
+			}
+		}
+		int distance = Integer.MAX_VALUE;
+		if (samePartition) {
+			distance = -1;
+			for (Integer i : destinations) {
+				if (visit[i] > distance) {
+					candidate.clear();
+					candidate.add(i);
+					distance = visit[i];
+				}
+				if (visit[i] == distance) {
+					candidate.add(i);
+				}
+			}
+			Random r = new Random();
+			int pivot = r.nextInt(candidate.size());
+			Integer destination = candidate.get(pivot);
+			Partition[] bipartition = bipartite(sender, destination);
+			destinations.clear();
+
+			bipartition[1].getVertex().forEach(i -> {
+				if (probableDestinations.contains(i))
+					destinations.add(i);
+			});
+
+		}
 		for (Integer i : destinations) {
-			if(visit[i]>maxDistance){
+			// if(visit[i]>maxDistance){
+			if (visit[i] < distance) {
 				candidate.clear();
 				candidate.add(i);
-				maxDistance = visit[i];
+				// maxDistance = visit[i];
+				distance = visit[i];
 			}
-			if(visit[i]==maxDistance){
+			// if(visit[i]==maxDistance){
+			if (visit[i] == distance) {
 				candidate.add(i);
 			}
-			
+
 		}
-		for(Integer i:candidate){
-		map.put(i,maxDistance);
+		for (Integer i : candidate) {
+			// map.put(i,maxDistance);
+			//give more priority to in-partition flows 
+			map.put(i, samePartition?distance:1);
 		}
 		return map;
 
 	}
 
 	/**
-	 * This method bipartite the graph considering two vertices and
-	 * creating a bipartition 
+	 * This method bipartite the graph considering two vertices and creating a
+	 * bipartition
+	 * 
 	 * @param sender
 	 * @param destination
 	 */
-	public void bipartite(Integer sender, Integer destination) {
+	public Partition[] bipartite(Integer sender, Integer destination) {
 		Partition[] vect = new Partition[2];
 		vect[0] = tree.getPartition(sender);
 		if (!vect[0].contains(destination)) {
-			// DEBUG
-			System.err
-					.println("Sender and destination belong to different partitions");
-			//
-			return;
+			return null;
 		}
 		int[] senderVisit;
 		int[] destinationVisit;
@@ -99,14 +132,15 @@ public class DistanceBasedPartitioner {
 			bfsVisits.put(destination, destinationVisit);
 		}
 		vect = vect[0].split(senderVisit, destinationVisit);
-		PartitionLeaf leaf =tree.getPartitionLeaf(sender);
+		PartitionLeaf leaf = tree.getPartitionLeaf(sender);
 		leaf.updateTree(vect);
+		return vect;
 
 	}
 
 	/**
-	 * Create two new partitions based on the hop distance choosing one vertex as
-	 * pivot
+	 * Create two new partitions based on the hop distance choosing one vertex
+	 * as pivot
 	 * 
 	 * @param p
 	 * @param vertex
@@ -179,11 +213,11 @@ public class DistanceBasedPartitioner {
 		return position.get(pivot);
 	}
 
-	public void printPartitions(){
+	public void printPartitions() {
 		tree.printPartitions();
 	}
 
-	public Partition getPartition(Integer vertex){
+	public Partition getPartition(Integer vertex) {
 		return tree.getPartition(vertex);
 	}
 }
